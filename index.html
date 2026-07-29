@@ -216,5 +216,13 @@
       stats.forEach((el) => observer.observe(el));
     })();
   </script>
+
+  <!-- Cloudflare Web Analytics. Cookieless and stores no personal data, so it
+       needs no consent banner. The token identifies the site, not the visitor,
+       and is meant to be public. -->
+  <script
+    type="module"
+    src="https://static.cloudflareinsights.com/beacon.min.js"
+    data-cf-beacon='{"token": "be20a35712644e94923b3b23333a7c67"}'></script>
 </body>
 </html>
