@@ -69,18 +69,6 @@ body {
   mask-image: linear-gradient(to right, transparent 0%, #000 4.5%, #000 95.5%, transparent 100%);
 }
 
-/* Kept in step with the walk background below: content that only makes sense
-   while the background is actually drawing. */
-.wide-only {
-  display: none;
-}
-
-@media (min-width: 56.01rem) {
-  .wide-only {
-    display: block;
-  }
-}
-
 /* Narrow screens have no clear margin, so the field sits under the text
    everywhere. Dim it further and let the veil cover the full width. */
 @media (max-width: 56rem) {

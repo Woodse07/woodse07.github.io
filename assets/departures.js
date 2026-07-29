@@ -54,7 +54,7 @@
     });
     caption.appendChild(
       document.createTextNode(
-        "Live from trains.oods.dev · " +
+        "Live · " +
           (data.station || "Dublin Heuston") +
           " · fetched " +
           fetchedAt
@@ -64,7 +64,11 @@
 
     var thead = document.createElement("thead");
     var headRow = document.createElement("tr");
-    ["Destination", "Expected", "Due"].forEach(function (label) {
+    // Not "Destination": the feed is trains passing the house in both
+    // directions, and display_name is the destination only for departures. For
+    // arrivals it is the origin, so the column is labelled neutrally and each
+    // row says which it is.
+    ["Service", "Expected", "Due"].forEach(function (label) {
       var th = document.createElement("th");
       th.scope = "col";
       th.textContent = label;
@@ -76,7 +80,13 @@
     var tbody = document.createElement("tbody");
     trains.slice(0, MAX_ROWS).forEach(function (train) {
       var row = document.createElement("tr");
-      cell(row, train.display_name || "—");
+
+      // west = departing Heuston, so display_name is where it is going.
+      // east = arriving, so display_name is where it has come from.
+      var name = train.display_name || "—";
+      var prefix = train.direction === "east" ? "from " : train.direction === "west" ? "to " : "";
+      cell(row, prefix + name);
+
       cell(row, train.expected || train.scheduled || "—");
 
       var due = typeof train.due_mins === "number" ? train.due_mins + " min" : "—";
