@@ -5,8 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Seamus Woods &mdash; Senior Full Stack Software Engineer</title>
   <meta name="description" content="Seamus Woods, Senior Full Stack Software Engineer. Projects, generative sketches, and contact details.">
+  <link rel="canonical" href="https://seamusw.oods.dev/">
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="data:,">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <script>
+    // GitHub Pages serves both / and /index.html with no redirect, so an
+    // /index.html link would otherwise appear as a second page in analytics and
+    // split the home page's figures. Rewrite before the counter script reads
+    // the URL. replaceState avoids a reload, so there is no flash.
+    if (window.location.pathname.endsWith("/index.html")) {
+      window.history.replaceState(
+        null,
+        "",
+        window.location.pathname.slice(0, -"index.html".length) +
+          window.location.search +
+          window.location.hash
+      );
+    }
+  </script>
 </head>
 <body>
   <div id="walk-bg" aria-hidden="true"></div>

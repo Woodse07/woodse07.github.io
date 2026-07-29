@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Seamus Woods">
+  <rect width="32" height="32" fill="#f6f3ec"/>
+  <g fill="#2b2620">
+    <circle cx="6.5" cy="25.5" r="2.4" opacity="0.22"/>
+    <circle cx="15" cy="25.5" r="2.4" opacity="0.38"/>
+    <circle cx="15" cy="17" r="2.4" opacity="0.55"/>
+    <circle cx="23.5" cy="17" r="2.4" opacity="0.72"/>
+  </g>
+  <circle cx="23.5" cy="7.5" r="4.6" fill="#9a4a24"/>
+</svg>
