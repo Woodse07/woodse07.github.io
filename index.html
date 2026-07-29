@@ -3,19 +3,96 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Seamus Woods</title>
-  <meta name="description" content="Personal site of Seamus Woods.">
+  <title>Seamus Woods &mdash; Senior Full Stack Software Engineer</title>
+  <meta name="description" content="Seamus Woods, Senior Full Stack Software Engineer. Projects, generative sketches, and contact details.">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="data:,">
 </head>
 <body>
-  <main>
+  <header class="hero">
     <h1>Seamus Woods</h1>
-    <p class="tagline">Personal site &mdash; under construction.</p>
-    <ul class="links">
-      <li><a href="https://github.com/Woodse07">GitHub</a></li>
-      <li><a href="mailto:seamuswoods10@gmail.com">Email</a></li>
-    </ul>
+    <p class="title">Senior Full Stack Software Engineer</p>
+    <nav class="nav" aria-label="Sections">
+      <a href="#about">About</a>
+      <a href="#sketches">Sketches</a>
+      <a href="#projects">Projects</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- TODO: review this copy — drafted from context, not from anything you told me directly. -->
+    <section id="about">
+      <h2>About</h2>
+      <p>
+        I&rsquo;m a full stack engineer based in Dublin, with a computer science
+        background from Trinity College Dublin. I work across the stack &mdash;
+        APIs and services through to the interfaces on top of them.
+      </p>
+      <p>
+        Outside of work I build things for the fun of it: generative sketches,
+        hardware side projects, and tools that scratch my own itches. A few of
+        them are below.
+      </p>
+    </section>
+
+    <section id="sketches">
+      <h2>Sketches</h2>
+      <p class="section-intro">
+        Small generative pieces, written in p5.js and running live in the browser.
+      </p>
+      <ul class="cards">
+        <li class="card">
+          <h3><a href="sketches/random-walk.html">Random Walk</a></h3>
+          <p>
+            A circle randomly chooses a direction &mdash; up, down, left or right
+            &mdash; every frame. Each time it passes through a cell in the grid
+            that cell&rsquo;s opacity increases, so the path it has taken slowly
+            emerges.
+          </p>
+        </li>
+      </ul>
+    </section>
+
+    <section id="projects">
+      <h2>Projects</h2>
+      <!--
+        TODO: replace the placeholder copy in each <article> below.
+        Add a link by uncommenting the <p class="card-link"> line and setting the href.
+        Delete any entry you don't want. Duplicate an <article> to add more.
+      -->
+      <ul class="cards">
+        <li class="card">
+          <h3>OpenSCAD models</h3>
+          <p class="placeholder">
+            TODO &mdash; what you model and why, what it&rsquo;s for, anything
+            interesting about the parametric approach.
+          </p>
+          <!-- <p class="card-link"><a href="">Source</a></p> -->
+        </li>
+        <li class="card">
+          <h3>Intervals.icu integration</h3>
+          <p class="placeholder">
+            TODO &mdash; what it integrates, what problem it solves, what you
+            built it with.
+          </p>
+          <!-- <p class="card-link"><a href="">Source</a></p> -->
+        </li>
+      </ul>
+    </section>
   </main>
+
+  <footer id="contact">
+    <h2>Contact</h2>
+    <ul class="links">
+      <li><a href="mailto:seamuswoods10@gmail.com">Email</a></li>
+      <li><a href="https://github.com/Woodse07">GitHub</a></li>
+      <!--
+        TODO: add your LinkedIn URL and uncomment. Left out rather than shipped
+        as a dead link.
+        <li><a href="https://www.linkedin.com/in/YOUR-PROFILE/">LinkedIn</a></li>
+      -->
+    </ul>
+  </footer>
 </body>
 </html>

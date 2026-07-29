@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Random Walk &mdash; Seamus Woods</title>
+  <meta name="description" content="A generative random walk sketch in p5.js by Seamus Woods.">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="icon" href="data:,">
+</head>
+<body class="sketch-page">
+  <header class="hero">
+    <a class="back" href="../index.html">&larr; Seamus Woods</a>
+    <h1>Random Walk</h1>
+    <p class="title">p5.js</p>
+  </header>
+
+  <main>
+    <div class="sketch-stage" id="sketch-stage"></div>
+
+    <div class="sketch-controls">
+      <button type="button" id="toggle">Pause</button>
+      <button type="button" id="reset">Reset</button>
+    </div>
+
+    <p class="sketch-note" id="motion-note" hidden>
+      Started paused because your system is set to reduce motion. Press play to run it.
+    </p>
+
+    <section>
+      <h2>What it does</h2>
+      <p>
+        A circle starts at the centre of a grid and picks a direction &mdash; up,
+        down, left or right &mdash; at random every frame, rejecting any move
+        that would take it off the grid. Each cell records how many times it has
+        been visited, and draws itself more opaque the more often it is crossed.
+        The path the walker has taken emerges from that, with the most-travelled
+        routes near the centre showing brightest.
+      </p>
+      <p>
+        The leading circle cycles through hues as it goes, so the current
+        position stays visible against the accumulated trail.
+      </p>
+    </section>
+  </main>
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"
+    integrity="sha512-7DACDM+XO+/7cocfzNIXh/3rSXc7MzTtr2elSVJLYcXXHPL1/lAyFSKU1F1JBPPCvBGOLNYJCqLlzFeJzc6dLg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+  <script src="random-walk.js"></script>
+</body>
+</html>
