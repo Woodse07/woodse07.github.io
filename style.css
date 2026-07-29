@@ -361,10 +361,32 @@ p {
   cursor: grabbing;
 }
 
+/* Drawn under the trains. non-scaling-stroke keeps the lines hairline-thin at
+   every zoom level instead of thickening into ribbons. */
+.railways {
+  fill: none;
+  /* 3.23:1 against the landmass. The lighter tone this replaces measured
+     1.74:1, under the 3:1 guideline for graphical objects that carry meaning —
+     and these lines are what makes a train's direction readable. */
+  stroke: #8d7c62;
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
 .train {
   fill: var(--accent);
   fill-opacity: 0.85;
   cursor: pointer;
+  /* A transparent stroke widens the hit area without changing how the dot
+     looks; pointer-events: all makes the browser count it. Click gravity in
+     the script covers the rest. */
+  stroke: transparent;
+  stroke-width: 10;
+  vector-effect: non-scaling-stroke;
+  pointer-events: all;
 }
 
 .train:hover {

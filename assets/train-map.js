@@ -33,15 +33,19 @@
   var REFRESH_MS = 60000;
   var MIN_SPAN = 40; // most zoomed in, in projected units
   var DOT_R = 4.5; // radius at 1x, counter-scaled to stay constant on screen
+  var GRAVITY_PX = 18; // how far a click may miss a train and still select it
 
   var svg = document.getElementById("train-map");
   var outline = document.getElementById("ireland");
+  var rails = document.getElementById("railways");
   var layer = document.getElementById("train-layer");
   var status = document.getElementById("map-status");
   var detail = document.getElementById("train-detail");
   if (!svg || !outline || !layer || typeof IRELAND === "undefined") return;
 
   outline.setAttribute("d", IRELAND.path);
+  // Optional: the map still works without the rail overlay.
+  if (rails && typeof RAILWAYS !== "undefined") rails.setAttribute("d", RAILWAYS);
 
   var home = { x: 0, y: 0, w: IRELAND.width, h: IRELAND.height };
   var view = { x: home.x, y: home.y, w: home.w, h: home.h };
@@ -324,13 +328,40 @@
     { passive: false }
   );
 
+  // Clicking a 5px dot is unpleasant, especially on touch and especially in the
+  // Dublin cluster. A click that misses still selects the closest train within
+  // GRAVITY_PX of the pointer — measured in screen pixels, so the forgiveness
+  // stays the same however far in you have zoomed.
+  var nearestTrain = function (clientX, clientY) {
+    var rect = svg.getBoundingClientRect();
+    if (!rect.width) return null;
+    var point = toUserSpace(clientX, clientY);
+    var limit = GRAVITY_PX * (view.w / rect.width);
+    var best = null;
+    var bestDist = Infinity;
+
+    var nodes = layer.childNodes;
+    for (var i = 0; i < nodes.length; i++) {
+      var node = nodes[i];
+      if (!node.getAttribute) continue;
+      var dx = parseFloat(node.getAttribute("cx")) - point.x;
+      var dy = parseFloat(node.getAttribute("cy")) - point.y;
+      var dist = Math.hypot(dx, dy);
+      if (dist < bestDist && dist <= limit) {
+        bestDist = dist;
+        best = node.getAttribute("data-code");
+      }
+    }
+    return best;
+  };
+
   svg.addEventListener("click", function (event) {
     // A drag that happens to finish over a dot should not also select it.
     var wasDrag = moved;
     moved = false; // consume it, so the flag can never outlive its gesture
     if (wasDrag) return;
     var code = event.target && event.target.getAttribute && event.target.getAttribute("data-code");
-    select(code || null);
+    select(code || nearestTrain(event.clientX, event.clientY));
   });
 
   svg.addEventListener("keydown", function (event) {
