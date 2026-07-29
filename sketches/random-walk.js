@@ -63,8 +63,14 @@ const sketch = (p) => {
   const stage = document.getElementById("sketch-stage");
 
   let grid;
+  // Array index the walk starts from — must be a whole cell.
   let centerXIndex;
   let centerYIndex;
+  // Geometric midpoint of the cells, used only for drawing. Half-integer when
+  // the column/row count is even, which is why it can't reuse the index above:
+  // rounding it there would shift the whole grid half a cell off centre.
+  let midX;
+  let midY;
   let currPos = { x: 0, y: 0 };
   let hue = 0; // the original left this undefined, making the first frame NaN
 
@@ -74,6 +80,8 @@ const sketch = (p) => {
     grid = create2DArray(cols, rows);
     centerXIndex = Math.floor(cols / 2);
     centerYIndex = Math.floor(rows / 2);
+    midX = (cols - 1) / 2;
+    midY = (rows - 1) / 2;
     currPos = { x: 0, y: 0 };
     hue = 0;
   };
@@ -103,17 +111,18 @@ const sketch = (p) => {
       for (let j = 0; j < grid[0].length; j++) {
         if (grid[i][j] > 0) {
           p.fill(255, 255, 255, grid[i][j] * 50);
-          p.ellipse(
-            (i - centerXIndex) * spacing,
-            (j - centerYIndex) * spacing,
-            diameter
-          );
+          p.ellipse((i - midX) * spacing, (j - midY) * spacing, diameter);
         }
       }
     }
 
+    // currPos is relative to the start index, so shift into the same space.
     p.fill(hue, 200, 150);
-    p.ellipse(currPos.x * spacing, currPos.y * spacing, diameter * 1.5);
+    p.ellipse(
+      (currPos.x + centerXIndex - midX) * spacing,
+      (currPos.y + centerYIndex - midY) * spacing,
+      diameter * 1.5
+    );
   };
 
   p.setup = () => {
