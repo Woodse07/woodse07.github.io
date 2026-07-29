@@ -288,6 +288,29 @@ p {
   text-align: left;
 }
 
+/* Signals that the table is a live response rather than an illustration. */
+.live-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  vertical-align: 0.02em;
+  background: #2f7d4f;
+  border-radius: 50%;
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
+}
+
 .departures th {
   color: var(--ink-faint);
   font-size: 0.78rem;

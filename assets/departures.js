@@ -33,13 +33,42 @@
     var table = document.createElement("table");
     table.className = "departures";
 
+    // The caption carries the proof that this is live rather than illustrative:
+    // a pulsing dot, the host it came from, and the time it arrived. The
+    // timestamp is taken from the browser rather than the payload's own
+    // `as_of`, which the service currently reports in UTC while its train times
+    // are local — so it would read an hour behind.
     var caption = document.createElement("caption");
-    caption.textContent = "Next departures — " + (data.station || "Dublin Heuston");
+
+    var dot = document.createElement("span");
+    dot.className = "live-dot";
+    dot.setAttribute("aria-hidden", "true");
+    caption.appendChild(dot);
+
+    // hour12 forced off so this matches the 24-hour times in the table below;
+    // a US-defaulted locale would otherwise render "07:37 PM" beside "19:42".
+    var fetchedAt = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+    caption.appendChild(
+      document.createTextNode(
+        "Live · " +
+          (data.station || "Dublin Heuston") +
+          " · fetched " +
+          fetchedAt
+      )
+    );
     table.appendChild(caption);
 
     var thead = document.createElement("thead");
     var headRow = document.createElement("tr");
-    ["Destination", "Expected", "Due"].forEach(function (label) {
+    // Not "Destination": the feed is trains passing the house in both
+    // directions, and display_name is the destination only for departures. For
+    // arrivals it is the origin, so the column is labelled neutrally and each
+    // row says which it is.
+    ["Service", "Expected", "Due"].forEach(function (label) {
       var th = document.createElement("th");
       th.scope = "col";
       th.textContent = label;
@@ -51,7 +80,13 @@
     var tbody = document.createElement("tbody");
     trains.slice(0, MAX_ROWS).forEach(function (train) {
       var row = document.createElement("tr");
-      cell(row, train.display_name || "—");
+
+      // west = departing Heuston, so display_name is where it is going.
+      // east = arriving, so display_name is where it has come from.
+      var name = train.display_name || "—";
+      var prefix = train.direction === "east" ? "from " : train.direction === "west" ? "to " : "";
+      cell(row, prefix + name);
+
       cell(row, train.expected || train.scheduled || "—");
 
       var due = typeof train.due_mins === "number" ? train.due_mins + " min" : "—";
@@ -64,6 +99,10 @@
 
     mount.appendChild(table);
     mount.hidden = false;
+
+    // Only now is it true that there is a table to describe.
+    var note = document.getElementById("departures-note");
+    if (note) note.hidden = false;
   };
 
   var controller = new AbortController();

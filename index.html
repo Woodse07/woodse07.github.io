@@ -91,10 +91,16 @@
         <li class="card">
           <h3>Departure board</h3>
           <p>
-            A small FastAPI service in Docker that mirrors the departure board
-            at Dublin Heuston &mdash; the same information as the platform
-            display, served as JSON. It reports each train&rsquo;s destination,
-            direction, scheduled and expected times, and how late it is running.
+            A small FastAPI service in Docker, built like the dot-matrix boards
+            at Dublin Heuston. It lists the trains passing in the next while
+            &mdash; departing west or arriving east &mdash; with scheduled and
+            expected times and how late each one is running, served as JSON.
+          </p>
+          <!-- Revealed by departures.js only once the table actually renders,
+               so it never describes a table that failed to load. -->
+          <p id="departures-note" hidden>
+            The table below was fetched from a local server I&rsquo;m running
+            when you opened this page.
           </p>
           <!-- Populated by assets/departures.js, and left hidden if the service
                is unreachable. -->
@@ -117,6 +123,7 @@
             that cell&rsquo;s opacity increases, so the path it has taken slowly
             emerges.
           </p>
+          <p>It&rsquo;s currently running as the background of this page.</p>
         </li>
       </ul>
     </section>
