@@ -97,30 +97,56 @@
     });
     table.appendChild(tbody);
 
+    // A refresh replaces the table, so clear the previous one first.
+    while (mount.firstChild) mount.removeChild(mount.firstChild);
     mount.appendChild(table);
     mount.hidden = false;
 
     // Only now is it true that there is a table to describe.
     var note = document.getElementById("departures-note");
     if (note) note.hidden = false;
+
+    // The button is created on the first successful render, so it never
+    // appears offering to refresh a table that is not there.
+    if (refresh && refresh.hidden) refresh.hidden = false;
   };
 
-  var controller = new AbortController();
-  var timer = setTimeout(function () {
-    controller.abort();
-  }, TIMEOUT_MS);
+  var refresh = document.getElementById("departures-refresh");
+  var inFlight = false;
 
-  fetch(ENDPOINT, { signal: controller.signal })
-    .then(function (response) {
-      if (!response.ok) throw new Error(String(response.status));
-      return response.json();
-    })
-    .then(function (data) {
+  var load = function () {
+    if (inFlight) return;
+    inFlight = true;
+    if (refresh) refresh.disabled = true;
+
+    var controller = new AbortController();
+    var timer = setTimeout(function () {
+      controller.abort();
+    }, TIMEOUT_MS);
+
+    var done = function () {
       clearTimeout(timer);
-      render(data);
-    })
-    .catch(function () {
-      clearTimeout(timer);
-      // Deliberately silent: the card already describes the project.
-    });
+      inFlight = false;
+      if (refresh) refresh.disabled = false;
+    };
+
+    // no-store, or a refresh can be answered from cache and change nothing.
+    fetch(ENDPOINT, { signal: controller.signal, cache: "no-store" })
+      .then(function (response) {
+        if (!response.ok) throw new Error(String(response.status));
+        return response.json();
+      })
+      .then(function (data) {
+        done();
+        render(data);
+      })
+      .catch(function () {
+        done();
+        // Deliberately silent on first load: the card already describes the
+        // project. If a table is already showing, it simply stays as it was.
+      });
+  };
+
+  if (refresh) refresh.addEventListener("click", load);
+  load();
 })();
