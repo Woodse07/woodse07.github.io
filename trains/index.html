@@ -22,12 +22,27 @@
     <p id="map-status" class="map-status">Loading positions&hellip;</p>
 
     <div class="map-stage">
-      <svg id="train-map" role="img" aria-labelledby="map-title" xmlns="http://www.w3.org/2000/svg">
+      <svg
+        id="train-map"
+        viewBox="0 0 600 789"
+        role="group"
+        aria-labelledby="map-title"
+        xmlns="http://www.w3.org/2000/svg">
         <title id="map-title">Map of Ireland showing current train positions</title>
         <path id="ireland" class="landmass" />
         <g id="train-layer"></g>
       </svg>
     </div>
+
+    <div class="map-controls">
+      <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+      <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
+      <button type="button" id="zoom-reset">Reset</button>
+      <span class="map-hint">Drag to pan, scroll to zoom, tap a train for detail</span>
+    </div>
+
+    <!-- Filled in by train-map.js when a train is selected. -->
+    <aside id="train-detail" class="train-detail" aria-live="polite" hidden></aside>
 
     <section>
       <h2>How it works</h2>

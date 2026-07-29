@@ -351,9 +351,89 @@ p {
   stroke-linejoin: round;
 }
 
+#train-map {
+  /* The browser's own pan/zoom must not fight the map's. */
+  touch-action: none;
+  cursor: grab;
+}
+
+#train-map:active {
+  cursor: grabbing;
+}
+
 .train {
   fill: var(--accent);
   fill-opacity: 0.85;
+  cursor: pointer;
+}
+
+.train:hover {
+  fill-opacity: 1;
+}
+
+.train:focus-visible {
+  outline: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.train-selected {
+  fill: var(--ink);
+  fill-opacity: 1;
+  stroke: var(--paper);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.map-controls button {
+  min-width: 2.4rem;
+}
+
+.map-hint {
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+}
+
+.train-detail {
+  margin-top: 1.5rem;
+  padding: 1rem 1.15rem;
+  background: var(--card);
+  border: 1px solid var(--rule);
+}
+
+.train-detail h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.train-detail dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1.25rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.train-detail dt {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  align-self: baseline;
+}
+
+.train-detail dd {
+  margin: 0;
+  color: var(--ink);
 }
 
 .map-status {
