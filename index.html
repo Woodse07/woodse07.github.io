@@ -9,6 +9,9 @@
   <link rel="icon" href="data:,">
 </head>
 <body>
+  <div id="walk-bg" aria-hidden="true"></div>
+  <div id="text-veil" aria-hidden="true"></div>
+
   <header class="hero">
     <h1>Seamus Woods</h1>
     <p class="title">Senior Full Stack Software Engineer</p>
@@ -94,5 +97,38 @@
       -->
     </ul>
   </footer>
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"
+    integrity="sha512-7DACDM+XO+/7cocfzNIXh/3rSXc7MzTtr2elSVJLYcXXHPL1/lAyFSKU1F1JBPPCvBGOLNYJCqLlzFeJzc6dLg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+  <script src="assets/walk.js"></script>
+  <script>
+    (() => {
+      const el = document.getElementById("walk-bg");
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const narrow = !window.matchMedia("(min-width: 56rem)").matches;
+
+      const bg = createWalkSketch(el, {
+        spacing: 32,
+        frameRate: narrow ? 15 : 24,
+        // The walk starts centre and spreads outward, so it needs enough steps
+        // to have reached the margins before the first paint, or the page loads
+        // with the field bunched in the middle.
+        seedSteps: reduced ? 4000 : 2500,
+        dotDivisor: 4,
+        trailHue: 20,
+        trailSat: 60,
+        trailLight: 60,
+        gain: 14,
+        cap: 85,
+        headHue: 20,
+        autoStart: !reduced,
+      });
+
+      pauseWhenHidden(bg, () => !reduced);
+    })();
+  </script>
 </body>
 </html>
