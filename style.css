@@ -335,6 +335,15 @@ p {
   color: var(--accent);
 }
 
+.departures-actions {
+  margin: 0.85rem 0 0;
+}
+
+.departures-actions button {
+  font-size: 0.85rem;
+  padding: 0.35rem 0.8rem;
+}
+
 /* Visually marks unfinished copy so it can't ship unnoticed. */
 .placeholder {
   color: var(--ink-faint);
