@@ -365,11 +365,12 @@ p {
    every zoom level instead of thickening into ribbons. */
 .railways {
   fill: none;
-  /* 3.23:1 against the landmass. The lighter tone this replaces measured
-     1.74:1, under the 3:1 guideline for graphical objects that carry meaning —
-     and these lines are what makes a train's direction readable. */
-  stroke: #8d7c62;
-  stroke-width: 1;
+  /* These lines are what makes a train's direction readable, so they are drawn
+     to be traced rather than merely sensed. The first attempt at #bcae95/1px
+     measured 1.74:1 against the landmass, under the 3:1 guideline for
+     meaningful graphical objects. */
+  stroke: #6f6047;
+  stroke-width: 1.6;
   stroke-linecap: round;
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
@@ -391,6 +392,16 @@ p {
 
 .train:hover {
   fill-opacity: 1;
+}
+
+/* Sitting at an origin, or already terminated. Still worth showing and still
+   clickable, but visibly not one of the trains actually moving. */
+.train-idle {
+  fill: var(--paper);
+  fill-opacity: 1;
+  stroke: var(--ink-faint);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
 }
 
 .train:focus-visible {

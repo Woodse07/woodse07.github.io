@@ -10,10 +10,13 @@
  *   {
  *     "as_of": "19:42:11",
  *     "trains": [
- *       { "code": "A226", "lat": 53.1, "lon": -7.3,
- *         "status": "R", "direction": "To Cork", "message": "..." }
+ *       { "train_code": "A226", "latitude": 53.1, "longitude": -7.3,
+ *         "status": "Running", "direction": "To Cork", "public_message": "..." }
  *     ]
  *   }
+ *
+ * Both the snake_case names above and short forms (code/lat/lon/message) are
+ * accepted, so the page keeps working if the service is renamed either way.
  *
  * Everything beyond code/lat/lon is optional. Origin, destination, lateness and
  * next stop are parsed out of `message` when present, so the map gets richer if
@@ -107,6 +110,46 @@
     applyView();
   };
 
+  /* ---------- normalising ---------- */
+
+  var pick = function () {
+    for (var i = 0; i < arguments.length; i++) {
+      if (arguments[i] !== undefined && arguments[i] !== null && arguments[i] !== "") {
+        return arguments[i];
+      }
+    }
+    return null;
+  };
+
+  // The feed reports three states: "Running", "Not yet running", and "T" for
+  // terminated. All three carry a position, so all three are worth drawing —
+  // but only one of them is a train actually moving, and the count says so.
+  var normaliseStatus = function (raw) {
+    var value = String(raw || "").toLowerCase();
+    if (value === "t" || value.indexOf("terminat") > -1) return "terminated";
+    if (value.indexOf("not yet") > -1) return "pending";
+    if (value.indexOf("running") > -1) return "running";
+    return "unknown";
+  };
+
+  var normalise = function (train) {
+    return {
+      code: pick(train.code, train.train_code, ""),
+      lat: Number(pick(train.lat, train.latitude, NaN)),
+      lon: Number(pick(train.lon, train.longitude, NaN)),
+      direction: pick(train.direction, ""),
+      message: pick(train.message, train.public_message, ""),
+      status: normaliseStatus(pick(train.status, train.train_status, "")),
+    };
+  };
+
+  var STATUS_LABEL = {
+    running: "Running",
+    pending: "Not yet running",
+    terminated: "Terminated",
+    unknown: null,
+  };
+
   /* ---------- parsing ---------- */
 
   // PublicMessage is one of:
@@ -186,6 +229,7 @@
 
     var dl = document.createElement("dl");
     row(dl, "Train", train.code);
+    row(dl, "Status", STATUS_LABEL[train.status]);
     row(dl, "Departs", info.parsed.departs);
     if (info.parsed.lateMins !== null) {
       row(
@@ -223,36 +267,42 @@
     while (layer.firstChild) layer.removeChild(layer.firstChild);
 
     var plotted = 0;
+    var running = 0;
     trains.forEach(function (train) {
-      var lat = Number(train.lat);
-      var lon = Number(train.lon);
-      // The feed includes trains with no fix yet; skip rather than stack them
-      // all in one corner of the map.
-      if (!isFinite(lat) || !isFinite(lon) || (lat === 0 && lon === 0)) return;
+      // The feed includes trains with no fix; skip rather than stack them all
+      // in one corner of the map.
+      if (!isFinite(train.lat) || !isFinite(train.lon)) return;
+      if (train.lat === 0 && train.lon === 0) return;
 
-      var p = projectPoint(lon, lat);
+      var p = projectPoint(train.lon, train.lat);
       var info = describe(train);
+      var statusLabel = STATUS_LABEL[train.status];
 
       var dot = document.createElementNS(SVG_NS, "circle");
       dot.setAttribute("cx", p.x.toFixed(1));
       dot.setAttribute("cy", p.y.toFixed(1));
       dot.setAttribute("data-code", train.code || "");
-      dot.setAttribute("class", "train");
+      dot.setAttribute("class", train.status === "running" ? "train" : "train train-idle");
       dot.setAttribute("tabindex", "0");
       dot.setAttribute("role", "button");
       dot.setAttribute("aria-pressed", "false");
-      dot.setAttribute("aria-label", (train.code || "Train") + ", " + info.route);
+      dot.setAttribute(
+        "aria-label",
+        (train.code || "Train") + ", " + info.route + (statusLabel ? ", " + statusLabel : "")
+      );
 
       var label = document.createElementNS(SVG_NS, "title");
-      label.textContent = (train.code || "Train") + " · " + info.route;
+      label.textContent =
+        (train.code || "Train") + " · " + info.route + (statusLabel ? " · " + statusLabel : "");
       dot.appendChild(label);
 
       layer.appendChild(dot);
       plotted += 1;
+      if (train.status === "running") running += 1;
     });
 
     applyView();
-    return plotted;
+    return { plotted: plotted, running: running };
   };
 
   /* ---------- interaction ---------- */
@@ -396,35 +446,60 @@
     if (status) status.textContent = text;
   };
 
+  var refreshButton = document.getElementById("map-refresh");
+  var inFlight = false;
+
   var load = function () {
+    if (inFlight) return;
+    inFlight = true;
+    if (refreshButton) refreshButton.disabled = true;
+
     var controller = new AbortController();
     var timer = setTimeout(function () {
       controller.abort();
     }, TIMEOUT_MS);
 
-    fetch(ENDPOINT, { signal: controller.signal })
+    var done = function () {
+      clearTimeout(timer);
+      inFlight = false;
+      if (refreshButton) refreshButton.disabled = false;
+    };
+
+    fetch(ENDPOINT, { signal: controller.signal, cache: "no-store" })
       .then(function (response) {
         if (!response.ok) throw new Error(String(response.status));
         return response.json();
       })
       .then(function (data) {
-        clearTimeout(timer);
-        trains = (data && data.trains) || [];
-        var plotted = draw();
+        done();
+        trains = ((data && data.trains) || []).map(normalise);
+        var counts = draw();
         // A refresh must not throw away where the reader zoomed to, or what
         // they were reading about.
         if (selectedCode) select(selectedCode);
-        setStatus(
-          plotted === 0
-            ? "No trains reporting a position right now."
-            : plotted + (plotted === 1 ? " train" : " trains") + " moving · fetched " + clockNow()
-        );
+
+        if (counts.plotted === 0) {
+          setStatus("No trains reporting a position right now.");
+        } else {
+          // Only "Running" is actually moving; the rest are sitting at an
+          // origin or have terminated, so the count says both numbers rather
+          // than calling all of them moving.
+          setStatus(
+            counts.running +
+              " running · " +
+              counts.plotted +
+              " tracked · fetched " +
+              clockNow()
+          );
+        }
       })
       .catch(function () {
-        clearTimeout(timer);
+        done();
         setStatus("Live positions unavailable right now.");
       });
   };
+
+  if (refreshButton) refreshButton.addEventListener("click", load);
 
   applyView();
   load();
