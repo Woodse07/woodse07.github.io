@@ -35,6 +35,7 @@
     <p class="title">Senior Software Engineer &amp; Tech Lead</p>
     <nav class="nav" aria-label="Sections">
       <a href="#about">About</a>
+      <a href="#projects">Projects</a>
       <a href="#sketches">Sketches</a>
       <a href="#design">Design</a>
       <a href="#contact">Contact</a>
@@ -66,6 +67,37 @@
         started &mdash; a bike mount among them. The rest is generative
         sketches and parametric design, some of which is below.
       </p>
+    </section>
+
+    <section id="projects">
+      <h2>Projects</h2>
+      <p class="section-intro">
+        Things running on a server at home, built because I wanted them to
+        exist.
+      </p>
+
+      <ul class="cards">
+        <li class="card">
+          <h3>Home automation</h3>
+          <p>
+            A Home Assistant install I keep extending: 48 automations across
+            seven areas of the house, with most sensors on Zigbee through
+            zigbee2mqtt. It tracks energy use, temperature and humidity room by
+            room, drives lighting and blinds, and handles camera detections from
+            Frigate. Presence, doorbell events and the state of the house all
+            feed the same set of rules.
+          </p>
+        </li>
+        <li class="card">
+          <h3>Departure board</h3>
+          <p>
+            A small FastAPI service in Docker that mirrors the departure board
+            at Dublin Heuston &mdash; the same information as the platform
+            display, served as JSON. It reports each train&rsquo;s destination,
+            direction, scheduled and expected times, and how late it is running.
+          </p>
+        </li>
+      </ul>
     </section>
 
     <section id="sketches">
