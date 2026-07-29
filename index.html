@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Seamus Woods &mdash; Senior Full Stack Software Engineer</title>
-  <meta name="description" content="Seamus Woods, Senior Full Stack Software Engineer. Projects, generative sketches, and contact details.">
+  <title>Seamus Woods &mdash; Senior Software Engineer &amp; Tech Lead</title>
+  <meta name="description" content="Seamus Woods, Senior Software Engineer and Tech Lead at Qualtrics in Dublin. Generative sketches and parametric 3D design.">
   <link rel="canonical" href="https://seamusw.oods.dev/">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -32,9 +32,10 @@
 
   <header class="hero">
     <h1>Seamus Woods</h1>
-    <p class="title">Senior Full Stack Software Engineer</p>
+    <p class="title">Senior Software Engineer &amp; Tech Lead</p>
     <nav class="nav" aria-label="Sections">
       <a href="#about">About</a>
+      <a href="#projects">Projects</a>
       <a href="#sketches">Sketches</a>
       <a href="#design">Design</a>
       <a href="#contact">Contact</a>
@@ -45,15 +46,61 @@
     <section id="about">
       <h2>About</h2>
       <p>
-        I&rsquo;m a full stack engineer based in Dublin, with a computer science
-        background from Trinity College Dublin. I work across the stack &mdash;
-        APIs and services through to the interfaces on top of them.
+        I&rsquo;m a Senior Software Engineer and Tech Lead at Qualtrics in
+        Dublin. I work on the Partner Accelerator team, building solutions that
+        cut the time it takes partners to get value out of the platform. Before
+        that I was on Distributions, working on interactive survey taking across
+        channels and the services behind it.
       </p>
       <p>
-        Outside of work I build things for the fun of it: generative sketches,
-        hardware side projects, and tools that scratch my own itches. A few of
-        them are below.
+        I hold a Masters in Computer Science from Trinity College Dublin. My
+        dissertation, <em>Understanding Emotion with Multimodal Machine
+        Learning</em>, trained models to read emotion from facial movement,
+        gesture and voice together, using recordings of real conversations
+        rather than posed expressions. Modelling how signals changed over time
+        beat reading them frame by frame, more features beat fewer, and audio
+        and visual together over time was the most accurate combination I
+        tested.
       </p>
+      <p>
+        Outside work I cycle and run, which is where a few of the 3D models
+        started &mdash; a bike mount among them. The rest is generative
+        sketches and parametric design, some of which is below.
+      </p>
+    </section>
+
+    <section id="projects">
+      <h2>Projects</h2>
+      <p class="section-intro">
+        Things running on a server at home, built because I wanted them to
+        exist.
+      </p>
+
+      <ul class="cards">
+        <li class="card">
+          <h3>Home automation</h3>
+          <p>
+            A Home Assistant install I keep extending: 48 automations across
+            seven areas of the house, with most sensors on Zigbee through
+            zigbee2mqtt. It tracks energy use, temperature and humidity room by
+            room, drives lighting and blinds, and handles camera detections from
+            Frigate. Presence, doorbell events and the state of the house all
+            feed the same set of rules.
+          </p>
+        </li>
+        <li class="card">
+          <h3>Departure board</h3>
+          <p>
+            A small FastAPI service in Docker that mirrors the departure board
+            at Dublin Heuston &mdash; the same information as the platform
+            display, served as JSON. It reports each train&rsquo;s destination,
+            direction, scheduled and expected times, and how late it is running.
+          </p>
+          <!-- Populated by assets/departures.js, and left hidden if the service
+               is unreachable. -->
+          <div id="departures" hidden></div>
+        </li>
+      </ul>
     </section>
 
     <section id="sketches">
@@ -77,8 +124,8 @@
     <section id="design">
       <h2>3D design and printing</h2>
       <p class="section-intro">
-        CAD, parametric modelling and generative design &mdash; published
-        openly, and printed by people I&rsquo;ve never met.
+        CAD, parametric modelling and generative design, published openly and
+        printed thousands of times.
       </p>
       <p class="tools">OpenSCAD &middot; SolidWorks &middot; topology optimisation &middot; FDM printing</p>
 
@@ -166,6 +213,7 @@
     crossorigin="anonymous"
     referrerpolicy="no-referrer"></script>
   <script src="assets/walk.js"></script>
+  <script src="assets/departures.js" defer></script>
   <script>
     (() => {
       const el = document.getElementById("walk-bg");
