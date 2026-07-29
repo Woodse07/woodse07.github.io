@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Seamus Woods &mdash; Senior Full Stack Software Engineer</title>
-  <meta name="description" content="Seamus Woods, Senior Full Stack Software Engineer. Projects, generative sketches, and contact details.">
+  <meta name="description" content="Seamus Woods, Senior Full Stack Software Engineer in Dublin. Multimodal machine learning research, generative sketches, and parametric 3D design.">
   <link rel="canonical" href="https://seamusw.oods.dev/">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -35,6 +35,7 @@
     <p class="title">Senior Full Stack Software Engineer</p>
     <nav class="nav" aria-label="Sections">
       <a href="#about">About</a>
+      <a href="#research">Research</a>
       <a href="#sketches">Sketches</a>
       <a href="#design">Design</a>
       <a href="#contact">Contact</a>
@@ -53,6 +54,37 @@
         Outside of work I build things for the fun of it: generative sketches,
         hardware side projects, and tools that scratch my own itches. A few of
         them are below.
+      </p>
+    </section>
+
+    <section id="research">
+      <h2>Research</h2>
+      <p class="section-intro">
+        Understanding Emotion with Multimodal Machine Learning &mdash; MCS
+        dissertation, Trinity College Dublin, 2021.
+      </p>
+      <p class="tools">Python &middot; TensorFlow &middot; scikit-learn &middot; OpenFace &middot; openSMILE</p>
+      <p>
+        Affective computing asks whether a computer can read how someone feels
+        and respond accordingly. Most models in the field are trained on posed
+        expressions recorded in a lab, which look very little like how people
+        actually behave. I trained mine on spontaneous conversations recorded in
+        the wild, across several cultures, and predicted emotion as a continuous
+        reading rather than a fixed set of labels.
+      </p>
+      <p>
+        The work fused signals across modalities &mdash; facial movement, head
+        and hand gestures, and the sound of the voice &mdash; and compared a
+        model that sees each moment in isolation against one that tracks how
+        those signals change over time.
+      </p>
+      <p>
+        Both choices held up. Combining modalities beat any single one, and
+        modelling time beat modelling frames, with each modality carrying a
+        different part of the answer: what you see conveys whether an emotion is
+        positive, what you hear conveys its intensity. That case for fusing
+        modalities is the same idea underneath the audio-visual models that
+        became mainstream years later.
       </p>
     </section>
 
