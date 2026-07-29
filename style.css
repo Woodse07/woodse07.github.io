@@ -265,6 +265,53 @@ p {
   font-size: 0.92rem;
 }
 
+/* Live departure board. Only ever shown when the service responds, so it never
+   renders as an empty or broken table. */
+#departures {
+  margin-top: 1rem;
+  overflow-x: auto;
+}
+
+.departures {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.departures caption {
+  margin-bottom: 0.5rem;
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.departures th {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+}
+
+.departures th,
+.departures td {
+  padding: 0.3rem 0.9rem 0.3rem 0;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.departures tr:last-child td {
+  border-bottom: none;
+}
+
+.departures td.late {
+  color: var(--accent);
+}
+
 /* Visually marks unfinished copy so it can't ship unnoticed. */
 .placeholder {
   color: var(--ink-faint);

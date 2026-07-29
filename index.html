@@ -96,6 +96,9 @@
             display, served as JSON. It reports each train&rsquo;s destination,
             direction, scheduled and expected times, and how late it is running.
           </p>
+          <!-- Populated by assets/departures.js, and left hidden if the service
+               is unreachable. -->
+          <div id="departures" hidden></div>
         </li>
       </ul>
     </section>
@@ -210,6 +213,7 @@
     crossorigin="anonymous"
     referrerpolicy="no-referrer"></script>
   <script src="assets/walk.js"></script>
+  <script src="assets/departures.js" defer></script>
   <script>
     (() => {
       const el = document.getElementById("walk-bg");
