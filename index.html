@@ -96,6 +96,14 @@
             display, served as JSON. It reports each train&rsquo;s destination,
             direction, scheduled and expected times, and how late it is running.
           </p>
+          <!-- Revealed by departures.js only once the table actually renders,
+               so it never describes a table that failed to load. -->
+          <p id="departures-note" hidden>
+            The table below is not an illustration. It was fetched from that
+            service when you opened this page, over a Cloudflare tunnel to a
+            server in my house, and those are the next trains out of Heuston
+            right now.
+          </p>
           <!-- Populated by assets/departures.js, and left hidden if the service
                is unreachable. -->
           <div id="departures" hidden></div>
@@ -116,6 +124,14 @@
             &mdash; every frame. Each time it passes through a cell in the grid
             that cell&rsquo;s opacity increases, so the path it has taken slowly
             emerges.
+          </p>
+          <!-- Only shown at widths where the background actually runs. Below
+               56rem there is no margin to draw in, so it is switched off and
+               this sentence would be describing nothing. -->
+          <p class="wide-only">
+            It is running behind this page as you read. The faint dots in the
+            margins are the trail it has left, and the coloured dot moving
+            through them is where the walker is now.
           </p>
         </li>
       </ul>

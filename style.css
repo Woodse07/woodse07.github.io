@@ -69,6 +69,18 @@ body {
   mask-image: linear-gradient(to right, transparent 0%, #000 4.5%, #000 95.5%, transparent 100%);
 }
 
+/* Kept in step with the walk background below: content that only makes sense
+   while the background is actually drawing. */
+.wide-only {
+  display: none;
+}
+
+@media (min-width: 56.01rem) {
+  .wide-only {
+    display: block;
+  }
+}
+
 /* Narrow screens have no clear margin, so the field sits under the text
    everywhere. Dim it further and let the veil cover the full width. */
 @media (max-width: 56rem) {
@@ -286,6 +298,29 @@ p {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-align: left;
+}
+
+/* Signals that the table is a live response rather than an illustration. */
+.live-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  vertical-align: 0.02em;
+  background: #2f7d4f;
+  border-radius: 50%;
+  animation: live-pulse 2s ease-in-out infinite;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot {
+    animation: none;
+  }
 }
 
 .departures th {
