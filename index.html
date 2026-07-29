@@ -63,11 +63,18 @@
         people I&rsquo;ve never met.
       </p>
 
+      <!--
+        Figures are hand-maintained from https://makerworld.com/en/@junimo —
+        MakerWorld blocks server-side requests and sends no CORS headers, so
+        they cannot be fetched live. Update them here when they drift.
+        The text content is the real value; data-value only drives the count-up,
+        so the correct number shows with JS off or if the animation never runs.
+      -->
       <ul class="stats">
-        <li><b>13</b> models</li>
-        <li><b>6.5k</b> downloads</li>
-        <li><b>3.6k</b> prints</li>
-        <li><b>3.6k</b> likes</li>
+        <li><b data-value="13">13</b> models</li>
+        <li><b data-value="6500">6.5k</b> downloads</li>
+        <li><b data-value="3600">3.6k</b> prints</li>
+        <li><b data-value="3600">3.6k</b> likes</li>
       </ul>
 
       <ul class="cards">
@@ -144,6 +151,50 @@
       });
 
       pauseWhenHidden(bg, () => !reduced);
+    })();
+  </script>
+  <script>
+    (() => {
+      const stats = document.querySelectorAll(".stats b[data-value]");
+      // Reduced motion keeps the values already sitting in the markup.
+      if (!stats.length || !("IntersectionObserver" in window)) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const DURATION = 1100;
+      const format = (v) =>
+        v >= 1000 ? (v / 1000).toFixed(1) + "k" : String(Math.round(v));
+
+      const countUp = (el) => {
+        const target = Number(el.dataset.value);
+        const start = performance.now();
+        el.textContent = format(0);
+
+        const tick = (now) => {
+          const t = Math.min((now - start) / DURATION, 1);
+          const eased = 1 - Math.pow(1 - t, 3);
+          if (t < 1) {
+            el.textContent = format(target * eased);
+            requestAnimationFrame(tick);
+          } else {
+            el.textContent = format(target); // land exactly on the real figure
+          }
+        };
+
+        requestAnimationFrame(tick);
+      };
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            observer.unobserve(entry.target); // run once, not on every scroll past
+            countUp(entry.target);
+          });
+        },
+        { threshold: 0.6 }
+      );
+
+      stats.forEach((el) => observer.observe(el));
     })();
   </script>
 </body>

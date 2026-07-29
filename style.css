@@ -205,6 +205,8 @@ p {
   font-size: 1.5rem;
   font-weight: 400;
   letter-spacing: normal;
+  /* Equal-width digits so the count-up doesn't jitter as values change. */
+  font-variant-numeric: tabular-nums;
 }
 
 .card {
