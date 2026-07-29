@@ -354,6 +354,151 @@ p {
   gap: 1.5rem;
 }
 
+/* --- Train map --- */
+
+.map-stage {
+  margin: 0 auto;
+  max-width: 26rem;
+}
+
+#train-map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.landmass {
+  fill: #ece5d6;
+  stroke: var(--rule);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+#train-map {
+  /* The browser's own pan/zoom must not fight the map's. */
+  touch-action: none;
+  cursor: grab;
+}
+
+#train-map:active {
+  cursor: grabbing;
+}
+
+/* Drawn under the trains. non-scaling-stroke keeps the lines hairline-thin at
+   every zoom level instead of thickening into ribbons. */
+.railways {
+  fill: none;
+  /* These lines are what makes a train's direction readable, so they are drawn
+     to be traced rather than merely sensed. The first attempt at #bcae95/1px
+     measured 1.74:1 against the landmass, under the 3:1 guideline for
+     meaningful graphical objects. */
+  stroke: #6f6047;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.train {
+  fill: var(--accent);
+  fill-opacity: 0.85;
+  cursor: pointer;
+  /* A transparent stroke widens the hit area without changing how the dot
+     looks; pointer-events: all makes the browser count it. Click gravity in
+     the script covers the rest. */
+  stroke: transparent;
+  stroke-width: 10;
+  vector-effect: non-scaling-stroke;
+  pointer-events: all;
+}
+
+.train:hover {
+  fill-opacity: 1;
+}
+
+/* Sitting at an origin, or already terminated. Still worth showing and still
+   clickable, but visibly not one of the trains actually moving. */
+.train-idle {
+  fill: var(--paper);
+  fill-opacity: 1;
+  stroke: var(--ink-faint);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.train:focus-visible {
+  outline: none;
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+
+.train-selected {
+  fill: var(--ink);
+  fill-opacity: 1;
+  stroke: var(--paper);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.map-controls button {
+  min-width: 2.4rem;
+}
+
+.map-hint {
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+}
+
+.train-detail {
+  margin-top: 1.5rem;
+  padding: 1rem 1.15rem;
+  background: var(--card);
+  border: 1px solid var(--rule);
+}
+
+.train-detail h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+}
+
+.train-detail dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1.25rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.train-detail dt {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  align-self: baseline;
+}
+
+.train-detail dd {
+  margin: 0;
+  color: var(--ink);
+}
+
+.map-status {
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 /* --- Sketch pages --- */
 
 .sketch-page .back {
