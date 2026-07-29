@@ -10,6 +10,7 @@
 </head>
 <body>
   <div id="walk-bg" aria-hidden="true"></div>
+  <div id="text-veil" aria-hidden="true"></div>
 
   <header class="hero">
     <h1>Seamus Woods</h1>
@@ -106,24 +107,22 @@
   <script>
     (() => {
       const el = document.getElementById("walk-bg");
-      // The CSS hides the background below this width; no point running it.
-      if (!window.matchMedia("(min-width: 56rem)").matches) return;
-
       const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const narrow = !window.matchMedia("(min-width: 56rem)").matches;
 
       const bg = createWalkSketch(el, {
         spacing: 32,
-        frameRate: 24,
-        // The walk starts centre and spreads outward, but the mask hides the
-        // centre — so it needs enough steps to have reached the margins before
-        // the first paint, or the page loads with blank sides.
+        frameRate: narrow ? 15 : 24,
+        // The walk starts centre and spreads outward, so it needs enough steps
+        // to have reached the margins before the first paint, or the page loads
+        // with the field bunched in the middle.
         seedSteps: reduced ? 4000 : 2500,
         dotDivisor: 4,
         trailHue: 20,
         trailSat: 60,
         trailLight: 60,
-        gain: 12,
-        cap: 60,
+        gain: 14,
+        cap: 85,
         headHue: 20,
         autoStart: !reduced,
       });

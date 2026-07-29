@@ -7,7 +7,10 @@
   --paper: #f6f3ec;
   --ink: #2b2620;
   --ink-soft: #5f574c;
-  --ink-faint: #8a7f70;
+  /* Clears AA (4.56:1) over the blurred field behind the text column. The
+     lighter #8a7f70 originally used here measured 3.39:1, which failed for the
+     small caps role line and captions it is applied to. */
+  --ink-faint: #756a5c;
   --rule: #e0d8ca;
   --card: #fffdf9;
   --accent: #9a4a24;
@@ -30,21 +33,55 @@ body {
 
 /* The walk runs behind everything, fading out under the centre column so text
    never sits on top of the dot field. */
+/* The walk stays visible across the whole page — the walker spends most of its
+   time near the middle, so masking the centre out would hide the sketch. The
+   centre is dimmed only slightly; legibility comes mainly from the blur veil
+   below. */
 #walk-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.85;
-  -webkit-mask-image: linear-gradient(to right, #000 0%, transparent 24%, transparent 76%, #000 100%);
-  mask-image: linear-gradient(to right, #000 0%, transparent 24%, transparent 76%, #000 100%);
+  opacity: 0.9;
+  -webkit-mask-image: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.62) 30%, rgba(0, 0, 0, 0.62) 70%, #000 100%);
+  mask-image: linear-gradient(to right, #000 0%, rgba(0, 0, 0, 0.62) 30%, rgba(0, 0, 0, 0.62) 70%, #000 100%);
 }
 
-/* Below roughly two columns' width there is no clear margin to draw in, so the
-   field would sit under the text. Drop it instead of fighting it. */
+/* A frosted band down the text column. Blurring the dots softens the hard edges
+   that sit next to glyphs, which is what actually costs legibility — the walk
+   still reads through it as a soft wash. Feathered at both sides so there is no
+   visible panel edge. */
+#text-veil {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  /* 38rem text column plus a ~1.75rem feather each side. Wider than this and
+     the fade eats into the margin, leaving the dots there half-blurred instead
+     of crisp. */
+  width: min(43rem, 100%);
+  z-index: 1;
+  pointer-events: none;
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 4.5%, #000 95.5%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent 0%, #000 4.5%, #000 95.5%, transparent 100%);
+}
+
+/* Narrow screens have no clear margin, so the field sits under the text
+   everywhere. Dim it further and let the veil cover the full width. */
 @media (max-width: 56rem) {
   #walk-bg {
-    display: none;
+    opacity: 0.6;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+
+  #text-veil {
+    width: 100%;
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 }
 
@@ -54,9 +91,9 @@ body {
   }
 }
 
-body > *:not(#walk-bg) {
+body > *:not(#walk-bg):not(#text-veil) {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: var(--measure);
   margin-inline: auto;
 }
