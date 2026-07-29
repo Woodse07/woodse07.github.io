@@ -1,7 +1,6 @@
 /*
- * Random Walk — ported from the react-p5 version in the old My-Website repo.
- * The walk logic is unchanged; the React wrapper is replaced by p5 instance
- * mode so the page needs no build step.
+ * Page controller for the standalone Random Walk sketch. The walk itself lives
+ * in assets/walk.js, shared with the background on the home page.
  */
 
 const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -10,154 +9,22 @@ const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)
 // canvas shows a formed walk instead of a single dot.
 const SEEDED_STEPS = 600;
 
-const create2DArray = (sizeX, sizeY) => {
-  let x = new Array(sizeX);
-  for (let i = 0; i < x.length; i++) {
-    x[i] = new Array(sizeY).fill(0);
-  }
-  return x;
-};
-
-const isValidDirection = (x, y, grid) => {
-  if (x < 0) return false;
-  if (y < 0) return false;
-  if (x > grid.length - 1) return false;
-  if (y > grid[0].length - 1) return false;
-  return true;
-};
-
-const getDirection = (currPos, possibleDirections, centerX, centerY, grid) => {
-  const getRandomDir = () => {
-    return possibleDirections[
-      Object.keys(possibleDirections)[
-        Math.floor(Math.random() * Object.keys(possibleDirections).length)
-      ]
-    ];
-  };
-
-  let nextDirection = getRandomDir();
-
-  while (
-    !isValidDirection(
-      currPos.x + nextDirection.x + centerX,
-      currPos.y + nextDirection.y + centerY,
-      grid
-    )
-  ) {
-    nextDirection = getRandomDir();
-  }
-
-  return nextDirection;
-};
-
-const sketch = (p) => {
-  const spacing = 30;
-  const diameter = spacing / 2.5;
-  const possibleDirections = {
-    up: { x: 0, y: -1 },
-    down: { x: 0, y: 1 },
-    left: { x: -1, y: 0 },
-    right: { x: 1, y: 0 },
-  };
-
-  const stage = document.getElementById("sketch-stage");
-
-  let grid;
-  // Array index the walk starts from — must be a whole cell.
-  let centerXIndex;
-  let centerYIndex;
-  // Geometric midpoint of the cells, used only for drawing. Half-integer when
-  // the column/row count is even, which is why it can't reuse the index above:
-  // rounding it there would shift the whole grid half a cell off centre.
-  let midX;
-  let midY;
-  let currPos = { x: 0, y: 0 };
-  let hue = 0; // the original left this undefined, making the first frame NaN
-
-  const reset = () => {
-    const cols = Math.max(1, Math.floor(p.width / spacing));
-    const rows = Math.max(1, Math.floor(p.height / spacing));
-    grid = create2DArray(cols, rows);
-    centerXIndex = Math.floor(cols / 2);
-    centerYIndex = Math.floor(rows / 2);
-    midX = (cols - 1) / 2;
-    midY = (rows - 1) / 2;
-    currPos = { x: 0, y: 0 };
-    hue = 0;
-  };
-
-  // Advance the walk by one move, recording the visit.
-  const step = () => {
-    grid[currPos.x + centerXIndex][currPos.y + centerYIndex] += 1;
-
-    const nextDirection = getDirection(
-      currPos,
-      possibleDirections,
-      centerXIndex,
-      centerYIndex,
-      grid
-    );
-
-    currPos.x += nextDirection.x;
-    currPos.y += nextDirection.y;
-  };
-
-  const render = () => {
-    p.clear();
-    p.noStroke();
-
-    // Trail first, so the walker is never painted over by its own cell.
-    for (let i = 0; i < grid.length; i++) {
-      for (let j = 0; j < grid[0].length; j++) {
-        if (grid[i][j] > 0) {
-          p.fill(255, 255, 255, grid[i][j] * 50);
-          p.ellipse((i - midX) * spacing, (j - midY) * spacing, diameter);
-        }
-      }
-    }
-
-    // currPos is relative to the start index, so shift into the same space.
-    p.fill(hue, 200, 150);
-    p.ellipse(
-      (currPos.x + centerXIndex - midX) * spacing,
-      (currPos.y + centerYIndex - midY) * spacing,
-      diameter * 1.5
-    );
-  };
-
-  p.setup = () => {
-    const canvas = p.createCanvas(stage.clientWidth, stage.clientHeight, p.WEBGL);
-    canvas.parent(stage);
-    p.colorMode(p.HSL, 255);
-    p.frameRate(stage.clientWidth < 850 ? 30 : 120);
-    reset();
-
-    if (prefersReducedMotion) {
-      for (let i = 0; i < SEEDED_STEPS; i++) step();
-      render();
-      p.noLoop();
-    }
-  };
-
-  p.draw = () => {
-    hue = hue < 255 ? hue + 1 : 0;
-    step();
-    render();
-  };
-
-  p.windowResized = () => {
-    p.resizeCanvas(stage.clientWidth, stage.clientHeight);
-    reset(); // grid dimensions change, so the walk restarts
-  };
-
-  // Exposed for the page controls.
-  p.restart = () => {
-    reset();
-    render();
-  };
-};
-
-const instance = new p5(sketch);
+const instance = createWalkSketch(document.getElementById("sketch-stage"), {
+  spacing: 30,
+  frameRate: 60,
+  seedSteps: prefersReducedMotion ? SEEDED_STEPS : 0,
+  dotDivisor: 2.5,
+  trailHue: 20,
+  trailSat: 70,
+  trailLight: 45,
+  gain: 40,
+  cap: 200,
+  headHue: null, // cycles, so the walker stays visible against the trail
+  // Muted and darker than the default: bright pastels wash out on cream.
+  headSat: 150,
+  headLight: 105,
+  autoStart: !prefersReducedMotion,
+});
 
 const toggleButton = document.getElementById("toggle");
 const resetButton = document.getElementById("reset");
@@ -184,3 +51,5 @@ toggleButton.addEventListener("click", () => {
 resetButton.addEventListener("click", () => {
   instance.restart();
 });
+
+pauseWhenHidden(instance, () => running);
