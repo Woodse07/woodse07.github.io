@@ -18,13 +18,12 @@
     <nav class="nav" aria-label="Sections">
       <a href="#about">About</a>
       <a href="#sketches">Sketches</a>
-      <a href="#projects">Projects</a>
+      <a href="#design">Design</a>
       <a href="#contact">Contact</a>
     </nav>
   </header>
 
   <main>
-    <!-- TODO: review this copy — drafted from context, not from anything you told me directly. -->
     <section id="about">
       <h2>About</h2>
       <p>
@@ -57,31 +56,77 @@
       </ul>
     </section>
 
-    <section id="projects">
-      <h2>Projects</h2>
+    <section id="design">
+      <h2>3D design and printing</h2>
+      <p class="section-intro">
+        CAD, parametric modelling and generative design &mdash; published
+        openly, and printed by people I&rsquo;ve never met.
+      </p>
+      <p class="tools">OpenSCAD &middot; SolidWorks &middot; topology optimisation &middot; FDM printing</p>
+
       <!--
-        TODO: replace the placeholder copy in each <article> below.
-        Add a link by uncommenting the <p class="card-link"> line and setting the href.
-        Delete any entry you don't want. Duplicate an <article> to add more.
+        Figures are hand-maintained from https://makerworld.com/en/@junimo —
+        MakerWorld blocks server-side requests and sends no CORS headers, so
+        they cannot be fetched live. Update them here when they drift.
+        The text content is the real value; data-value only drives the count-up,
+        so the correct number shows with JS off or if the animation never runs.
       -->
+      <ul class="stats">
+        <li><b data-value="13">13</b> models</li>
+        <li><b data-value="6500">6.5k</b> downloads</li>
+        <li><b data-value="3600">3.6k</b> prints</li>
+        <li><b data-value="3600">3.6k</b> likes</li>
+      </ul>
+
       <ul class="cards">
         <li class="card">
-          <h3>OpenSCAD models</h3>
-          <p class="placeholder">
-            TODO &mdash; what you model and why, what it&rsquo;s for, anything
-            interesting about the parametric approach.
+          <h3>
+            <a href="https://makerworld.com/en/models/2044509-infinite-unique-snowflake-generator">Infinite Unique Snowflake Generator</a>
+          </h3>
+          <p>
+            Algorithmic randomness generates a different snowflake on every run
+            &mdash; reuse the same seed and you get the same flake back.
+            Complexity, branching and size are exposed as parameters, and the
+            output is tuned to print support-free even at fractal-fine tips.
           </p>
-          <!-- <p class="card-link"><a href="">Source</a></p> -->
         </li>
         <li class="card">
-          <h3>Intervals.icu integration</h3>
-          <p class="placeholder">
-            TODO &mdash; what it integrates, what problem it solves, what you
-            built it with.
+          <h3>
+            <a href="https://makerworld.com/en/models/2014853-cube-shelf-for-skadis-extends-pegboard-surface">Cube Shelf for SK&Aring;DIS</a>
+          </h3>
+          <p>
+            Storage that adds pegboard rather than consuming it &mdash; both
+            side panels carry the SK&Aring;DIS slot spacing, so the grid
+            continues straight through the shelf and hooks still mount to it.
+            Prints as a single piece.
           </p>
-          <!-- <p class="card-link"><a href="">Source</a></p> -->
+        </li>
+        <li class="card">
+          <h3>
+            <a href="https://makerworld.com/en/models/1952234-organic-shelf-bracket-strong-lightweight">Organic Shelf Bracket</a>
+          </h3>
+          <p>
+            Designed with topology optimisation: the solver strips material from
+            everywhere the load path doesn&rsquo;t travel, leaving a bone-like
+            form that is shaped by the forces rather than drawn. Holds a 10kg
+            shelf in PLA+ at 25% infill.
+          </p>
+        </li>
+        <li class="card">
+          <h3>
+            <a href="https://makerworld.com/en/models/1962543-parametric-legos-frames-for-ikea-skadis-modular">Parametric LEGO frames and shelves</a>
+          </h3>
+          <p>
+            A family of SK&Aring;DIS display pieces driven from a handful of
+            variables, so one source generates every size in the set rather than
+            each being modelled separately.
+          </p>
         </li>
       </ul>
+
+      <p class="card-link">
+        <a href="https://makerworld.com/en/@junimo">All 13 models on MakerWorld</a>
+      </p>
     </section>
   </main>
 
@@ -89,12 +134,9 @@
     <h2>Contact</h2>
     <ul class="links">
       <li><a href="mailto:seamuswoods10@gmail.com">Email</a></li>
+      <li><a href="https://www.linkedin.com/in/seamus-woods/">LinkedIn</a></li>
       <li><a href="https://github.com/Woodse07">GitHub</a></li>
-      <!--
-        TODO: add your LinkedIn URL and uncomment. Left out rather than shipped
-        as a dead link.
-        <li><a href="https://www.linkedin.com/in/YOUR-PROFILE/">LinkedIn</a></li>
-      -->
+      <li><a href="https://makerworld.com/en/@junimo">MakerWorld</a></li>
     </ul>
   </footer>
 
@@ -128,6 +170,50 @@
       });
 
       pauseWhenHidden(bg, () => !reduced);
+    })();
+  </script>
+  <script>
+    (() => {
+      const stats = document.querySelectorAll(".stats b[data-value]");
+      // Reduced motion keeps the values already sitting in the markup.
+      if (!stats.length || !("IntersectionObserver" in window)) return;
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+      const DURATION = 1100;
+      const format = (v) =>
+        v >= 1000 ? (v / 1000).toFixed(1) + "k" : String(Math.round(v));
+
+      const countUp = (el) => {
+        const target = Number(el.dataset.value);
+        const start = performance.now();
+        el.textContent = format(0);
+
+        const tick = (now) => {
+          const t = Math.min((now - start) / DURATION, 1);
+          const eased = 1 - Math.pow(1 - t, 3);
+          if (t < 1) {
+            el.textContent = format(target * eased);
+            requestAnimationFrame(tick);
+          } else {
+            el.textContent = format(target); // land exactly on the real figure
+          }
+        };
+
+        requestAnimationFrame(tick);
+      };
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            observer.unobserve(entry.target); // run once, not on every scroll past
+            countUp(entry.target);
+          });
+        },
+        { threshold: 0.6 }
+      );
+
+      stats.forEach((el) => observer.observe(el));
     })();
   </script>
 </body>

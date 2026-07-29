@@ -174,12 +174,49 @@ p {
   color: var(--ink-faint);
 }
 
+/* Names the tools plainly, so the CAD and optimisation terms are findable by
+   anyone scanning for them. */
+.tools {
+  margin-top: -0.5rem;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .cards {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
   gap: 1.5rem;
+}
+
+/* Adoption figures. These are the point of the design section — the numbers
+   are the evidence, so they get their own rule-bounded band above the cards. */
+.stats {
+  list-style: none;
+  margin: 0 0 1.75rem;
+  padding: 0.9rem 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.75rem;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
+.stats b {
+  display: block;
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: normal;
+  /* Equal-width digits so the count-up doesn't jitter as values change. */
+  font-variant-numeric: tabular-nums;
 }
 
 .card {
@@ -193,11 +230,27 @@ p {
 
 .card h3 a {
   color: var(--ink);
-  border-bottom: none;
+  border-bottom: 1px solid var(--rule);
 }
 
 .card h3 a:hover,
 .card h3 a:focus-visible {
+  color: var(--accent);
+  border-bottom-color: currentColor;
+}
+
+/* Marks the links that leave the site, so a card title is visibly a link
+   rather than looking like a plain heading. */
+.card h3 a[href^="http"]::after {
+  content: "\2197";
+  margin-left: 0.3em;
+  color: var(--ink-faint);
+  font-size: 0.8em;
+  vertical-align: 0.15em;
+}
+
+.card h3 a[href^="http"]:hover::after,
+.card h3 a[href^="http"]:focus-visible::after {
   color: var(--accent);
 }
 
