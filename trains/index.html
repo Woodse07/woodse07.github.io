@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live train map &mdash; Seamus Woods</title>
+  <meta name="description" content="Live positions of Irish Rail trains, served from a self-hosted API.">
+  <link rel="canonical" href="https://seamusw.oods.dev/trains/">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+</head>
+<body class="sketch-page">
+  <header class="hero">
+    <a class="back" href="../">&larr; Seamus Woods</a>
+    <h1>Live train map</h1>
+    <p class="title">Irish Rail &middot; self-hosted API</p>
+  </header>
+
+  <main>
+    <p id="map-status" class="map-status">Loading positions&hellip;</p>
+
+    <div class="map-stage">
+      <svg id="train-map" role="img" aria-labelledby="map-title" xmlns="http://www.w3.org/2000/svg">
+        <title id="map-title">Map of Ireland showing current train positions</title>
+        <path id="ireland" class="landmass" />
+        <g id="train-layer"></g>
+      </svg>
+    </div>
+
+    <section>
+      <h2>How it works</h2>
+      <p>
+        Every dot is a train that is moving right now. The positions come from
+        Irish Rail&rsquo;s realtime feed, pulled by a small FastAPI service
+        running in Docker on a server in my house and served back out through a
+        Cloudflare tunnel. Nothing here is precomputed &mdash; the page asks for
+        positions when you open it, and again every minute while you watch.
+      </p>
+      <p>
+        The island is drawn from Natural Earth boundary data, projected with an
+        equirectangular fit scaled by the cosine of the mean latitude. Over a
+        country this size the distortion is invisible, and it means the map
+        needs no tile server, no API key and no mapping library &mdash; it is a
+        single SVG path with points placed on top.
+      </p>
+    </section>
+  </main>
+
+  <script src="../assets/ireland.js"></script>
+  <script src="../assets/train-map.js"></script>
+
+  <script
+    data-goatcounter="https://swoods.goatcounter.com/count"
+    data-goatcounter-settings='{"no_onload": true}'
+    async
+    src="https://gc.zgo.at/count.js"></script>
+  <script src="../assets/analytics.js"></script>
+</body>
+</html>

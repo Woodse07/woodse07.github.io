@@ -331,6 +331,38 @@ p {
   gap: 1.5rem;
 }
 
+/* --- Train map --- */
+
+.map-stage {
+  margin: 0 auto;
+  max-width: 26rem;
+}
+
+#train-map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.landmass {
+  fill: #ece5d6;
+  stroke: var(--rule);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.train {
+  fill: var(--accent);
+  fill-opacity: 0.85;
+}
+
+.map-status {
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 /* --- Sketch pages --- */
 
 .sketch-page .back {
