@@ -19,6 +19,16 @@
   var TIMEOUT_MS = 4000;
   var MAX_ROWS = 5;
 
+  // hour12 forced off so this matches the 24-hour times in the table below; a
+  // US-defaulted locale would otherwise render "07:37 PM" beside "19:42".
+  var clockNow = function () {
+    return new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
   var cell = function (row, text, className) {
     var td = document.createElement("td");
     td.textContent = text;
@@ -28,7 +38,7 @@
 
   var render = function (data) {
     var trains = (data && data.trains) || [];
-    if (!trains.length) return;
+    if (!trains.length) return false;
 
     var table = document.createElement("table");
     table.className = "departures";
@@ -45,19 +55,12 @@
     dot.setAttribute("aria-hidden", "true");
     caption.appendChild(dot);
 
-    // hour12 forced off so this matches the 24-hour times in the table below;
-    // a US-defaulted locale would otherwise render "07:37 PM" beside "19:42".
-    var fetchedAt = new Date().toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
     caption.appendChild(
       document.createTextNode(
         "Live · " +
           (data.station || "Dublin Heuston") +
           " · fetched " +
-          fetchedAt
+          clockNow()
       )
     );
     table.appendChild(caption);
@@ -109,15 +112,55 @@
     // The button is created on the first successful render, so it never
     // appears offering to refresh a table that is not there.
     if (refresh && refresh.hidden) refresh.hidden = false;
+
+    return true;
   };
 
   var refresh = document.getElementById("departures-refresh");
+  var statusEl = document.getElementById("departures-status");
+  var statusTimer = null;
   var inFlight = false;
 
-  var load = function () {
+  // The caption already carries a fetch time, but it is small, uppercase and
+  // easy to miss when the numbers below happen not to change — so a click gets
+  // its own answer, held briefly and then faded out.
+  var setStatus = function (text, options) {
+    if (!statusEl) return;
+    var opts = options || {};
+
+    clearTimeout(statusTimer);
+    statusEl.textContent = text;
+    statusEl.classList.toggle("is-error", !!opts.error);
+    statusEl.classList.remove("is-fading");
+    statusEl.hidden = false;
+
+    if (!opts.hold) {
+      statusTimer = setTimeout(function () {
+        statusEl.classList.add("is-fading");
+        // Matches the fade in style.css; hiding it only once it has finished
+        // keeps the space from collapsing mid-transition.
+        statusTimer = setTimeout(function () {
+          statusEl.hidden = true;
+        }, 500);
+      }, opts.error ? 6000 : 3500);
+    }
+  };
+
+  // A second confirmation for anyone not reading the words: the table itself
+  // briefly lifts. Suppressed under reduced-motion by the stylesheet.
+  var flashTable = function () {
+    mount.classList.remove("is-refreshed");
+    // Reading offsetWidth restarts the animation on a repeated refresh.
+    void mount.offsetWidth;
+    mount.classList.add("is-refreshed");
+  };
+
+  var load = function (userInitiated) {
     if (inFlight) return;
     inFlight = true;
     if (refresh) refresh.disabled = true;
+    // hold: this one stays until the request resolves and replaces it.
+    if (userInitiated) setStatus("Refreshing…", { hold: true });
 
     var controller = new AbortController();
     var timer = setTimeout(function () {
@@ -138,15 +181,34 @@
       })
       .then(function (data) {
         done();
-        render(data);
+        var rendered = render(data);
+        if (!userInitiated) return;
+        if (rendered) {
+          setStatus("Updated " + clockNow());
+          flashTable();
+        } else {
+          // The request worked; the feed simply has nothing in the window. Say
+          // so rather than claiming an update that changed nothing on screen.
+          setStatus("Nothing new — no trains reported just now.");
+        }
       })
       .catch(function () {
         done();
-        // Deliberately silent on first load: the card already describes the
-        // project. If a table is already showing, it simply stays as it was.
+        // Still silent on the automatic first load: the card already describes
+        // the project, and a table that never appeared needs no apology. A
+        // click is different — somebody asked, so they are told it failed.
+        if (userInitiated) {
+          setStatus("Couldn’t reach the server — showing the last result.", {
+            error: true,
+          });
+        }
       });
   };
 
-  if (refresh) refresh.addEventListener("click", load);
+  if (refresh) {
+    refresh.addEventListener("click", function () {
+      load(true);
+    });
+  }
   load();
 })();

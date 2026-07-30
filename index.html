@@ -109,6 +109,15 @@
                refresh a table that is not on the page. -->
           <p class="departures-actions">
             <button type="button" id="departures-refresh" hidden>Refresh</button>
+            <!-- Confirms a click did something. Only written to on a manual
+                 refresh, so the polite region never announces a background
+                 load. -->
+            <span
+              id="departures-status"
+              class="refresh-status"
+              role="status"
+              aria-live="polite"
+              hidden></span>
           </p>
           <!-- The icon is decorative — the link text already says it is a map —
                so it is hidden from assistive tech. -->

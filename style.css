@@ -353,6 +353,49 @@ p {
   padding: 0.35rem 0.8rem;
 }
 
+/* Reply to a refresh click, shown beside the button it answers. Shared by the
+   departure board and the train map. */
+.refresh-status {
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+/* The map controls are a flex row with their own gap; only the inline board
+   needs the space made by hand. */
+.departures-actions .refresh-status {
+  margin-left: 0.7rem;
+}
+
+.refresh-status.is-error {
+  color: var(--accent);
+}
+
+.refresh-status.is-fading {
+  opacity: 0;
+}
+
+/* A second, wordless confirmation that the table below is new. */
+#departures.is-refreshed {
+  animation: refresh-flash 1.1s ease-out;
+}
+
+@keyframes refresh-flash {
+  from { background-color: rgba(154, 74, 36, 0.12); }
+  to { background-color: transparent; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refresh-status {
+    transition: none;
+  }
+
+  #departures.is-refreshed {
+    animation: none;
+  }
+}
+
 /* Visually marks unfinished copy so it can't ship unnoticed. */
 .placeholder {
   color: var(--ink-faint);

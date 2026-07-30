@@ -458,12 +458,42 @@
   };
 
   var refreshButton = document.getElementById("map-refresh");
+  var refreshStatus = document.getElementById("map-refresh-status");
+  var refreshTimer = null;
   var inFlight = false;
 
-  var load = function () {
+  // The status line above the map is rewritten by every load, including the
+  // minute timer, so a reader who just clicked cannot tell their click was the
+  // cause. This answers the click specifically, next to the button, and then
+  // gets out of the way. Only manual refreshes write here, so the polite live
+  // region stays quiet while the page ticks along on its own.
+  var setRefreshStatus = function (text, options) {
+    if (!refreshStatus) return;
+    var opts = options || {};
+
+    clearTimeout(refreshTimer);
+    refreshStatus.textContent = text;
+    refreshStatus.classList.toggle("is-error", !!opts.error);
+    refreshStatus.classList.remove("is-fading");
+    refreshStatus.hidden = false;
+
+    if (!opts.hold) {
+      refreshTimer = setTimeout(function () {
+        refreshStatus.classList.add("is-fading");
+        // Matches the fade in style.css.
+        refreshTimer = setTimeout(function () {
+          refreshStatus.hidden = true;
+        }, 500);
+      }, opts.error ? 6000 : 3500);
+    }
+  };
+
+  var load = function (userInitiated) {
     if (inFlight) return;
     inFlight = true;
     if (refreshButton) refreshButton.disabled = true;
+    // hold: replaced when the request resolves.
+    if (userInitiated) setRefreshStatus("Refreshing…", { hold: true });
 
     var controller = new AbortController();
     var timer = setTimeout(function () {
@@ -489,6 +519,16 @@
         // they were reading about.
         if (selectedCode) select(selectedCode);
 
+        // The counts belong in the status line above the map; this only has to
+        // say the click landed, and when.
+        if (userInitiated) {
+          setRefreshStatus(
+            counts.plotted === 0
+              ? "Updated — no trains reporting."
+              : "Updated " + clockNow()
+          );
+        }
+
         if (counts.plotted === 0) {
           setStatus("No trains reporting a position right now.");
         } else {
@@ -507,10 +547,19 @@
       .catch(function () {
         done();
         setStatus("Live positions unavailable right now.");
+        if (userInitiated) {
+          setRefreshStatus("Couldn’t reach the server — dots unchanged.", {
+            error: true,
+          });
+        }
       });
   };
 
-  if (refreshButton) refreshButton.addEventListener("click", load);
+  if (refreshButton) {
+    refreshButton.addEventListener("click", function () {
+      load(true);
+    });
+  }
 
   applyView();
   load();
