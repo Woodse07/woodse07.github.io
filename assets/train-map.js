@@ -35,7 +35,7 @@
   var TIMEOUT_MS = 6000;
   var REFRESH_MS = 60000;
   var MIN_SPAN = 40; // most zoomed in, in projected units
-  var DOT_R = 4.5; // radius at 1x, counter-scaled to stay constant on screen
+  var DOT_R = 6.5; // radius at 1x, counter-scaled to stay constant on screen
   var GRAVITY_PX = 18; // how far a click may miss a train and still select it
 
   var svg = document.getElementById("train-map");
@@ -62,6 +62,11 @@
       "viewBox",
       view.x.toFixed(2) + " " + view.y.toFixed(2) + " " + view.w.toFixed(2) + " " + view.h.toFixed(2)
     );
+
+    // Claiming every touch gesture meant a phone could not scroll past the map.
+    // Zoomed all the way out there is nothing to pan to, so the page keeps its
+    // gestures; once zoomed in, the map takes them so it can be dragged.
+    svg.style.touchAction = view.w < home.w - 0.5 ? "none" : "pan-y pinch-zoom";
     // Counter-scale the dots so zooming in separates them rather than just
     // drawing bigger markers.
     var r = (DOT_R * view.w) / home.w;
@@ -372,6 +377,12 @@
   svg.addEventListener(
     "wheel",
     function (event) {
+      // Don't trap the page's scroll. Zoomed all the way out there is nothing
+      // to explore, so a plain wheel scrolls past the map as the reader
+      // expects; once zoomed in the map keeps the wheel. Ctrl or Cmd always
+      // zooms, and the buttons work regardless.
+      var zoomedIn = view.w < home.w - 0.5;
+      if (!zoomedIn && !event.ctrlKey && !event.metaKey) return;
       event.preventDefault();
       zoomAt(event.deltaY > 0 ? 1.15 : 1 / 1.15, event.clientX, event.clientY);
     },

@@ -370,6 +370,15 @@ p {
   max-width: 26rem;
 }
 
+/* The island is taller than it is wide, so on a phone a full-width map filled
+   the viewport and there was nothing to indicate a page below it. Bounding the
+   width bounds the height: 46vh wide is roughly 60vh tall at this aspect. */
+@media (max-width: 40rem) {
+  .map-stage {
+    max-width: 46vh;
+  }
+}
+
 #train-map {
   display: block;
   width: 100%;
@@ -384,8 +393,9 @@ p {
 }
 
 #train-map {
-  /* The browser's own pan/zoom must not fight the map's. */
-  touch-action: none;
+  /* Starting value only. train-map.js swaps this as the zoom changes, so a
+     zoomed-out map leaves scrolling to the page. */
+  touch-action: pan-y pinch-zoom;
   cursor: grab;
 }
 
