@@ -40,6 +40,14 @@
       <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
       <button type="button" id="zoom-reset">Reset</button>
       <button type="button" id="map-refresh">Refresh</button>
+      <!-- Confirms a click did something. Only written to on a manual refresh,
+           so the minute timer never announces itself. -->
+      <span
+        id="map-refresh-status"
+        class="refresh-status"
+        role="status"
+        aria-live="polite"
+        hidden></span>
       <span class="map-hint">Zoom with the buttons, drag to pan, tap a train for detail</span>
     </div>
 
