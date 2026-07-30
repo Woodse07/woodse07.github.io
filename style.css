@@ -265,6 +265,15 @@ p {
   font-size: 0.92rem;
 }
 
+/* Glyph sitting beside a card link. Sized in em so it tracks the link's font
+   size, and nudged down slightly to sit on the optical centre of the text. */
+.link-icon {
+  width: 1em;
+  height: 1em;
+  margin-right: 0.4em;
+  vertical-align: -0.14em;
+}
+
 /* Live departure board. Only ever shown when the service responds, so it never
    renders as an empty or broken table. */
 #departures {

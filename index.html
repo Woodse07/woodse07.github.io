@@ -110,7 +110,17 @@
           <p class="departures-actions">
             <button type="button" id="departures-refresh" hidden>Refresh</button>
           </p>
-          <p class="card-link"><a href="trains/">Live map of every train</a></p>
+          <!-- The icon is decorative — the link text already says it is a map —
+               so it is hidden from assistive tech. -->
+          <p class="card-link">
+            <a href="trains/"><svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"
+                 fill="none" stroke="currentColor" stroke-width="1.6"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 3 3 5.5v15L9 18l6 3 6-2.5v-15L15 6 9 3Z"/>
+              <path d="M9 3v15"/>
+              <path d="M15 6v15"/>
+            </svg>Live map of every train</a>
+          </p>
         </li>
       </ul>
     </section>
