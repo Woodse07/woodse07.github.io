@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Seamus Woods &mdash; Senior Software Engineer &amp; Tech Lead</title>
-  <meta name="description" content="Seamus Woods, Senior Software Engineer and Tech Lead at Qualtrics in Dublin. Generative sketches and parametric 3D design.">
+  <title>Séamus Woods &mdash; Senior Software Engineer &amp; Tech Lead</title>
+  <meta name="description" content="Séamus Woods, Senior Software Engineer and Tech Lead at Qualtrics in Dublin. Generative sketches and parametric 3D design.">
   <link rel="canonical" href="https://seamusw.oods.dev/">
   <!--
     Social preview. Without these a shared link unfurls as a bare URL on
@@ -18,15 +18,42 @@
     square layout — rather than summary_large_image, which would stretch it.
   -->
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Seamus Woods">
-  <meta property="og:title" content="Seamus Woods &mdash; Senior Software Engineer &amp; Tech Lead">
-  <meta property="og:description" content="Seamus Woods, Senior Software Engineer and Tech Lead at Qualtrics in Dublin. Generative sketches and parametric 3D design.">
+  <meta property="og:site_name" content="Séamus Woods">
+  <meta property="og:title" content="Séamus Woods &mdash; Senior Software Engineer &amp; Tech Lead">
+  <meta property="og:description" content="Séamus Woods, Senior Software Engineer and Tech Lead at Qualtrics in Dublin. Generative sketches and parametric 3D design.">
   <meta property="og:url" content="https://seamusw.oods.dev/">
   <meta property="og:image" content="https://seamusw.oods.dev/apple-touch-icon.png">
   <meta property="og:image:width" content="180">
   <meta property="og:image:height" content="180">
   <meta property="og:image:alt" content="Site icon: a trail of dots stepping across paper, with the walker in rust.">
   <meta name="twitter:card" content="summary">
+  <!--
+    The name is written with the fada everywhere on the site, but almost nobody
+    types it that way when they search. Search engines fold diacritics on their
+    own, so "Seamus Woods" should still match, but that behaviour is theirs to
+    change and not something to rely on for the one query this site exists to
+    answer. alternateName states the unaccented spelling outright, so the two
+    forms are one person rather than two names that happen to look alike.
+    Entities are not decoded inside a JSON-LD script, so the fada is written as
+    a literal character (the document is UTF-8) and "&" is spelled out.
+    sameAs points at the same profiles as the contact list; they are the
+    corroborating identities, so they belong here as well as in the markup.
+  -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "Séamus Woods",
+    "alternateName": "Seamus Woods",
+    "url": "https://seamusw.oods.dev/",
+    "jobTitle": "Senior Software Engineer and Tech Lead",
+    "worksFor": { "@type": "Organization", "name": "Qualtrics" },
+    "sameAs": [
+      "https://github.com/Woodse07",
+      "https://www.linkedin.com/in/seamus-woods/"
+    ]
+  }
+  </script>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
@@ -52,7 +79,7 @@
   <div id="text-veil" aria-hidden="true"></div>
 
   <header class="hero">
-    <h1>Seamus Woods</h1>
+    <h1>Séamus Woods</h1>
     <p class="title">Senior Software Engineer &amp; Tech Lead</p>
     <nav class="nav" aria-label="Sections">
       <a href="#about">About</a>
