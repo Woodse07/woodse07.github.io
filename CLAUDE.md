@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Personal site for Seamus Woods, served by GitHub Pages at **seamusw.oods.dev**
+Personal site for Séamus Woods, served by GitHub Pages at **seamusw.oods.dev**
 (`CNAME`). Hand-written static HTML, CSS and JavaScript — no framework, no
 bundler, no package manager, no CI. What is in the repo is exactly what ships.
 
