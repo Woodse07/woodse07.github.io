@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minesweeper &mdash; Séamus Woods</title>
+  <meta name="description" content="Minesweeper written in plain JavaScript, played on frosted glass over the random walk.">
+  <link rel="canonical" href="https://seamusw.oods.dev/minesweeper/">
+  <!-- Social preview; see the home page for why. Per-page title and URL, so a
+       link to the game unfurls as the game rather than as the site. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Séamus Woods">
+  <meta property="og:title" content="Minesweeper &mdash; Séamus Woods">
+  <meta property="og:description" content="Minesweeper written in plain JavaScript, played on frosted glass over the random walk.">
+  <meta property="og:url" content="https://seamusw.oods.dev/minesweeper/">
+  <meta property="og:image" content="https://seamusw.oods.dev/apple-touch-icon.png">
+  <meta property="og:image:width" content="180">
+  <meta property="og:image:height" content="180">
+  <meta property="og:image:alt" content="Site icon: a trail of dots stepping across paper, with the walker in rust.">
+  <meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+</head>
+<body class="sketch-page ms-page">
+  <div id="walk-bg" aria-hidden="true"></div>
+  <div id="text-veil" aria-hidden="true"></div>
+
+  <!-- Icons used inside the grid. Inline rather than fetched so a cell can be
+       drawn the instant it changes, with no request in the way. -->
+  <svg class="ms-sprite" aria-hidden="true" focusable="false" width="0" height="0">
+    <defs>
+      <symbol id="ms-icon-flag" viewBox="0 0 24 24">
+        <path d="M6 21V4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+        <path d="M6 4.6h10.8a.7.7 0 0 1 .55 1.13L14.8 9l2.55 3.27a.7.7 0 0 1-.55 1.13H6z" fill="currentColor"/>
+      </symbol>
+      <symbol id="ms-icon-mine" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="5.4" fill="currentColor"/>
+        <path d="M12 2.6v3.2M12 18.2v3.2M2.6 12h3.2M18.2 12h3.2M5.3 5.3l2.3 2.3M16.4 16.4l2.3 2.3M18.7 5.3l-2.3 2.3M7.6 16.4l-2.3 2.3"
+              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </symbol>
+      <symbol id="ms-icon-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2"/>
+        <path d="M12 7.2V12l3.2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </symbol>
+      <symbol id="ms-icon-trophy" viewBox="0 0 24 24">
+        <path d="M7 4h10v4.5a5 5 0 0 1-10 0z" fill="currentColor"/>
+        <path d="M7 5.5H4.4v1.2A3.4 3.4 0 0 0 7.8 10M17 5.5h2.6v1.2A3.4 3.4 0 0 1 16.2 10"
+              fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M12 13.4V17M8.6 20h6.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </symbol>
+    </defs>
+  </svg>
+
+  <header class="hero">
+    <a class="back" href="../">&larr; Séamus Woods</a>
+    <h1>Minesweeper</h1>
+    <p class="title">Plain JavaScript &middot; no dependencies</p>
+  </header>
+
+  <main>
+    <div class="ms-toolbar">
+      <!-- Filled in by minesweeper-board.js so the three levels are declared
+           once, in the file that also knows their dimensions. -->
+      <div class="ms-segmented" id="ms-levels" role="radiogroup" aria-label="Difficulty"></div>
+      <button type="button" id="ms-new">New game</button>
+    </div>
+
+    <div class="ms-hud">
+      <span class="ms-stat">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ms-icon-mine"/></svg>
+        <span id="ms-mines">10</span>
+        <span class="ms-sr">mines left to flag</span>
+      </span>
+      <span class="ms-stat">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ms-icon-clock"/></svg>
+        <span id="ms-time">0:00</span>
+        <span class="ms-sr">elapsed</span>
+      </span>
+      <span class="ms-stat ms-stat-best">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ms-icon-trophy"/></svg>
+        <span id="ms-best">&mdash;</span>
+        <span class="ms-sr">best time at this difficulty</span>
+      </span>
+    </div>
+
+    <div class="ms-stage" id="ms-stage">
+      <div class="ms-board" id="ms-board" role="grid" aria-label="Minefield"></div>
+
+      <!-- Shown when a game ends, and dismissable, because the finished board
+           is worth looking at. -->
+      <div class="ms-overlay" id="ms-overlay" hidden>
+        <div class="ms-card" role="dialog" aria-modal="true" aria-labelledby="ms-overlay-title">
+          <p class="ms-eyebrow" id="ms-overlay-eyebrow"></p>
+          <h2 class="ms-title" id="ms-overlay-title"></h2>
+          <p class="ms-detail" id="ms-overlay-detail"></p>
+          <p class="ms-actions">
+            <button type="button" id="ms-again">Play again</button>
+            <button type="button" id="ms-dismiss">See the board</button>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ms-controls">
+      <button type="button" id="ms-flag-mode" aria-pressed="false">
+        <svg class="ms-btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ms-icon-flag"/></svg>
+        Flag mode
+      </button>
+      <span class="ms-hint">Click to open &middot; right-click or hold to flag &middot; click a number to clear around it</span>
+    </div>
+
+    <!-- Written to only when a game ends or the flag mode is toggled. A reveal
+         announces nothing: a running commentary on every click would leave a
+         screen reader talking all day. -->
+    <p id="ms-live" class="ms-sr" role="status" aria-live="polite"></p>
+
+    <section>
+      <h2>How it works</h2>
+      <p>
+        The rules live in one file that never touches the page, and the page
+        lives in another that never decides anything about the game. A move
+        comes back as a list of the cells that changed, each carrying the
+        distance it sits from wherever you just clicked. That number goes onto
+        the cell as a custom property and the stylesheet turns it into an
+        animation delay, which is the whole reason the board opens as a ripple
+        rather than all at once &mdash; one integer per cell, and not a single
+        timer in the JavaScript.
+      </p>
+      <p>
+        The first click is always safe. Mines are laid <em>after</em> it lands,
+        avoiding the cell you clicked and its eight neighbours, so an opening
+        move can never lose the game and always opens a pocket to work from.
+        Clicking a number whose flags do not add up wobbles its neighbours
+        instead of quietly doing nothing.
+      </p>
+      <p>
+        The board is glass over the random walk running behind this page, so
+        the dots keep moving under a cleared square. Everything on the page is
+        hand-written HTML, CSS and JavaScript, and the whole game is about
+        twenty kilobytes.
+      </p>
+    </section>
+  </main>
+
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.10/p5.min.js"
+    integrity="sha512-7DACDM+XO+/7cocfzNIXh/3rSXc7MzTtr2elSVJLYcXXHPL1/lAyFSKU1F1JBPPCvBGOLNYJCqLlzFeJzc6dLg=="
+    crossorigin="anonymous"
+    referrerpolicy="no-referrer"></script>
+  <script src="../assets/walk.js"></script>
+  <script>
+    (() => {
+      // The walk is what the glass is frosting. If the CDN is blocked the page
+      // is still a perfectly good game on plain paper, so this stays optional.
+      // Both symbols are checked: walk.js is served from here and will load,
+      // but it calls `new p5(...)` on the first line of the sketch, so a
+      // missing library throws from inside a function that is present.
+      if (typeof p5 !== "function" || typeof createWalkSketch !== "function") return;
+
+      const el = document.getElementById("walk-bg");
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const narrow = !window.matchMedia("(min-width: 56rem)").matches;
+
+      const bg = createWalkSketch(el, {
+        spacing: 32,
+        // Slower than the home page. The board sits on top of this and the eye
+        // is meant to be on the game, not on what is moving underneath it.
+        frameRate: narrow ? 12 : 18,
+        // The walk starts centre and spreads outward, so it needs enough steps
+        // to have reached the margins before the first paint, or the page loads
+        // with the field bunched in the middle.
+        seedSteps: reduced ? 4000 : 2500,
+        dotDivisor: 4,
+        trailHue: 20,
+        trailSat: 60,
+        trailLight: 60,
+        gain: 14,
+        cap: 85,
+        headHue: 20,
+        autoStart: !reduced,
+      });
+
+      pauseWhenHidden(bg, () => !reduced);
+    })();
+  </script>
+
+  <script src="../assets/minesweeper.js"></script>
+  <script src="../assets/minesweeper-board.js"></script>
+
+  <script
+    data-goatcounter="https://swoods.goatcounter.com/count"
+    data-goatcounter-settings='{"no_onload": true}'
+    async
+    src="https://gc.zgo.at/count.js"></script>
+  <script src="../assets/analytics.js"></script>
+</body>
+</html>

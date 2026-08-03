@@ -631,3 +631,524 @@ button:focus-visible {
   color: var(--ink-faint);
   font-size: 0.92rem;
 }
+
+/* --- Minesweeper --- */
+
+/*
+ * The theme layer, and the only place in this section that names a colour. The
+ * rules below reference nothing but these tokens, so the game can be lifted out
+ * of this site by replacing this block and taking the rest verbatim — which is
+ * how the standalone version of it works.
+ *
+ * Everything here maps back to the paper theme at the top of this file. The
+ * board is glass: cells are translucent over the walk running behind the page,
+ * so an opened square is a hole through to the dots rather than a painted tile.
+ */
+.ms-page {
+  --ms-glass: rgba(255, 253, 249, 0.55);
+  --ms-glass-edge: rgba(224, 216, 202, 0.9);
+  --ms-grid: rgba(43, 38, 32, 0.13);
+  /* Covered cells are an etch on the glass. Below about 0.09 a covered square
+     and an opened one stop being tellable apart at a glance. */
+  --ms-cover: rgba(43, 38, 32, 0.1);
+  --ms-cover-hover: rgba(43, 38, 32, 0.17);
+  --ms-cover-press: rgba(43, 38, 32, 0.24);
+  --ms-ink: var(--ink);
+  --ms-dim: var(--ink-faint);
+  --ms-accent: var(--accent);
+  --ms-accent-wash: rgba(154, 74, 36, 0.18);
+  --ms-danger: #a32f1c;
+  --ms-flag: #a32f1c;
+  /* Warm enough to belong on paper, dark enough to clear AA over the glass at
+     its most crowded — the worst case is the densest part of the walk showing
+     through, which composites to about #f6e8de. */
+  --ms-n1: #2f4b8f;
+  --ms-n2: #226043;
+  --ms-n3: #9a4a24;
+  --ms-n4: #5b3f86;
+  --ms-n5: #77451a;
+  --ms-n6: #16606a;
+  --ms-n7: #2b2620;
+  --ms-n8: #56503f;
+
+  --ms-reveal: 170ms;
+  --ms-ease-out: cubic-bezier(0.2, 0, 0, 1);
+  /* Delay per ripple ring. The board caps the ring count, so the longest
+     possible reveal stays a little over a third of a second. */
+  --ms-stagger: 16ms;
+}
+
+.ms-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+.ms-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.ms-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* One control, so the three levels read as a set rather than three buttons that
+   happen to sit together. */
+.ms-segmented {
+  display: flex;
+}
+
+.ms-segmented button {
+  border-radius: 0;
+  color: var(--ms-dim);
+  background: var(--ms-glass);
+}
+
+.ms-segmented button + button {
+  border-left: 0;
+}
+
+.ms-segmented button[aria-checked="true"] {
+  color: var(--paper);
+  background: var(--ms-ink);
+  border-color: var(--ms-ink);
+}
+
+.ms-hud {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1.25rem 0 0.75rem;
+}
+
+.ms-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.8rem;
+  min-width: 5.4rem;
+  justify-content: center;
+  background: var(--ms-glass);
+  border: 1px solid var(--ms-glass-edge);
+  font-size: 0.92rem;
+  /* Tabular figures stop the clock nudging the layout every second. */
+  font-variant-numeric: tabular-nums;
+}
+
+.ms-stat svg {
+  width: 0.85rem;
+  height: 0.85rem;
+  color: var(--ms-dim);
+}
+
+.ms-stat.is-negative {
+  color: var(--ms-danger);
+}
+
+.ms-stat-best {
+  color: var(--ms-dim);
+}
+
+/* The glass. One frosted pane for the whole board: blurring per cell would be
+   the same picture at many times the cost. */
+.ms-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 0.7rem;
+  background: var(--ms-glass);
+  border: 1px solid var(--ms-glass-edge);
+  -webkit-backdrop-filter: blur(9px) saturate(112%);
+  backdrop-filter: blur(9px) saturate(112%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
+}
+
+/* Cells carry their own right and bottom rule and the board closes the top and
+   left of the frame, so no line in the lattice is ever drawn twice — doubled
+   lines are what make a grid look furry at small cell sizes. */
+.ms-board {
+  display: grid;
+  grid-template-columns: repeat(var(--ms-cols, 9), var(--ms-cell, 30px));
+  grid-auto-rows: var(--ms-cell, 30px);
+  border-top: 1px solid var(--ms-grid);
+  border-left: 1px solid var(--ms-grid);
+  touch-action: manipulation;
+}
+
+/* Rows exist for role="grid" only; `contents` keeps them out of the layout so
+   the cells stay direct grid items. */
+.ms-row {
+  display: contents;
+}
+
+.ms-cell {
+  position: relative;
+  width: var(--ms-cell, 30px);
+  height: var(--ms-cell, 30px);
+  padding: 0;
+  border: 0;
+  border-right: 1px solid var(--ms-grid);
+  border-bottom: 1px solid var(--ms-grid);
+  background: transparent;
+  color: var(--ms-dim);
+  font: inherit;
+  font-size: calc(var(--ms-cell, 30px) * 0.5);
+  font-weight: 600;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* The cover: an etch on the glass, not a raised tile. Revealing wipes it away
+   and leaves the walk showing through. */
+.ms-cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--ms-cover);
+  transition: background-color 90ms ease;
+}
+
+.ms-cell:not(.is-revealed):hover::before {
+  background: var(--ms-cover-hover);
+}
+
+.ms-cell:not(.is-revealed):active::before {
+  background: var(--ms-cover-press);
+}
+
+.ms-cell:hover,
+.ms-cell:focus-visible {
+  /* The global button rule tints text and border on hover; neither belongs on
+     a cell, which says everything it has to say through the cover. */
+  color: var(--ms-dim);
+  border-color: var(--ms-grid);
+}
+
+.ms-cell:focus-visible {
+  outline: 2px solid var(--ms-accent);
+  /* Inset, so the ring sits inside the lattice rather than straddling it. */
+  outline-offset: -2px;
+  z-index: 3;
+}
+
+.ms-v {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 72%;
+  height: 72%;
+}
+
+.ms-v svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ms-cell[data-n="1"] .ms-v { color: var(--ms-n1); }
+.ms-cell[data-n="2"] .ms-v { color: var(--ms-n2); }
+.ms-cell[data-n="3"] .ms-v { color: var(--ms-n3); }
+.ms-cell[data-n="4"] .ms-v { color: var(--ms-n4); }
+.ms-cell[data-n="5"] .ms-v { color: var(--ms-n5); }
+.ms-cell[data-n="6"] .ms-v { color: var(--ms-n6); }
+.ms-cell[data-n="7"] .ms-v { color: var(--ms-n7); }
+.ms-cell[data-n="8"] .ms-v { color: var(--ms-n8); }
+
+/* The static end state is on the rule itself, which is what makes all of this
+   work with animation switched off: the keyframes only supply the movement in
+   between. */
+.ms-cell.is-revealed::before {
+  opacity: 0;
+  animation: ms-clear var(--ms-reveal) var(--ms-ease-out) calc(var(--ms-wave, 0) * var(--ms-stagger)) both;
+}
+
+.ms-cell.is-revealed {
+  cursor: default;
+}
+
+.ms-cell.is-revealed .ms-v {
+  animation: ms-value 150ms var(--ms-ease-out) calc(var(--ms-wave, 0) * var(--ms-stagger)) both;
+}
+
+.ms-cell.is-revealed[data-n]:not(.is-mine) {
+  cursor: pointer;
+}
+
+/* Flags sit above the cover, so the cell stays closed underneath. */
+.ms-cell.is-flagged .ms-v {
+  color: var(--ms-flag);
+  animation: ms-flag 130ms var(--ms-ease-out) both;
+}
+
+.ms-ghost {
+  position: absolute;
+  z-index: 2;
+  width: 72%;
+  height: 72%;
+  color: var(--ms-flag);
+  pointer-events: none;
+  animation: ms-fade-out 120ms ease both;
+}
+
+.ms-ghost svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* A flag that turned out to be wrong keeps its flag and is struck through —
+   clearer than swapping in a mine, which would read as "there was one here". */
+.ms-cell.is-wrong .ms-v {
+  color: var(--ms-danger);
+  opacity: 0.5;
+}
+
+.ms-cell.is-wrong::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 14%;
+  right: 14%;
+  height: 1px;
+  background: var(--ms-danger);
+  transform: rotate(-45deg);
+  animation: ms-strike 160ms var(--ms-ease-out) calc(var(--ms-wave, 0) * var(--ms-stagger)) both;
+}
+
+.ms-cell.is-mine .ms-v {
+  color: var(--ms-ink);
+}
+
+.ms-cell.is-boom::before {
+  opacity: 1;
+  background: var(--ms-danger);
+  animation: none;
+}
+
+.ms-cell.is-boom .ms-v {
+  color: var(--paper);
+  animation: ms-value 120ms var(--ms-ease-out) both;
+}
+
+/* The shockwave: a square ring, drawn once, from the cell that went off. */
+.ms-cell.is-boom::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 1px solid var(--ms-danger);
+  pointer-events: none;
+  animation: ms-shock 480ms var(--ms-ease-out) both;
+}
+
+.ms-cell.is-nudge::before {
+  animation: ms-nudge 200ms ease;
+}
+
+.ms-board.is-lost {
+  animation: ms-jolt 260ms ease;
+}
+
+/* The win sweep is a tint running diagonally across the lattice. It rides on
+   the cell rather than the cover, because by then most covers have been wiped
+   to nothing and would sweep invisibly. */
+.ms-board.is-won .ms-cell {
+  animation: ms-win 460ms var(--ms-ease-out) calc(var(--ms-wave, 0) * 18ms) both;
+}
+
+/* Flag mode makes every click a flag, so say so on the cursor too. */
+.ms-flagging .ms-cell:not(.is-revealed) {
+  cursor: crosshair;
+}
+
+.ms-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.ms-btn-icon {
+  width: 0.85rem;
+  height: 0.85rem;
+  vertical-align: -0.1em;
+  margin-right: 0.3rem;
+}
+
+#ms-flag-mode[aria-pressed="true"] {
+  color: var(--paper);
+  background: var(--ms-accent);
+  border-color: var(--ms-accent);
+}
+
+.ms-hint {
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+}
+
+.ms-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  background: rgba(246, 243, 236, 0.66);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  animation: ms-fade-in 160ms ease both;
+}
+
+.ms-overlay[hidden] {
+  /* The rule above sets display, which would otherwise beat the browser's own
+     rule for [hidden] and leave the card on screen. */
+  display: none;
+}
+
+.ms-card {
+  width: min(20rem, 86%);
+  padding: 1.3rem 1.4rem 1.1rem;
+  text-align: center;
+  background: var(--card);
+  border: 1px solid var(--rule);
+  box-shadow: 0 14px 40px -22px rgba(43, 38, 32, 0.6);
+  animation: ms-card-in 200ms var(--ms-ease-out) 40ms both;
+}
+
+.ms-eyebrow {
+  margin: 0 0 0.4rem;
+  color: var(--ink-faint);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.ms-card .ms-title {
+  margin: 0 0 0.4rem;
+  font-family: var(--serif);
+  font-size: 1.35rem;
+  font-weight: 400;
+}
+
+.ms-overlay.is-won .ms-title {
+  color: var(--ms-accent);
+}
+
+.ms-detail {
+  margin: 0 0 1rem;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.ms-actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+@keyframes ms-clear {
+  /* A hard wipe upward rather than a fade: the cover leaves along a straight
+     edge, which is the same geometry as the lattice it sits in. */
+  from { opacity: 1; clip-path: inset(0 0 0 0); }
+  to { opacity: 0; clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes ms-value {
+  from { opacity: 0; transform: translateY(2px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ms-flag {
+  from { opacity: 0; transform: translateY(-3px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes ms-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes ms-strike {
+  from { opacity: 0; transform: rotate(-45deg) scaleX(0); }
+  to { opacity: 1; transform: rotate(-45deg) scaleX(1); }
+}
+
+@keyframes ms-shock {
+  from { opacity: 0.9; transform: scale(1); }
+  to { opacity: 0; transform: scale(3.4); }
+}
+
+@keyframes ms-nudge {
+  0%, 100% { background-color: var(--ms-cover); }
+  50% { background-color: var(--ms-cover-press); }
+}
+
+@keyframes ms-jolt {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@keyframes ms-win {
+  0% { background-color: transparent; }
+  35% { background-color: var(--ms-accent-wash); }
+  100% { background-color: transparent; }
+}
+
+@keyframes ms-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes ms-card-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Every rule above pairs its animation with a static end state, so switching
+   the animations off changes the timing and nothing else. */
+@media (prefers-reduced-motion: reduce) {
+  .ms-page *,
+  .ms-page *::before,
+  .ms-page *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+@media (max-width: 40rem) {
+  .ms-toolbar {
+    justify-content: center;
+  }
+
+  .ms-segmented button {
+    padding: 0.45rem 0.7rem;
+    font-size: 0.86rem;
+  }
+
+  .ms-hint {
+    display: none;
+  }
+}
