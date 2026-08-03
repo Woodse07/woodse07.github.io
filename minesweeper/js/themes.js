@@ -9,15 +9,16 @@
 
   const STORAGE_KEY = 'ms:theme';
 
-  // `swatch` is [tile, accent] — the two colours that identify a theme at 18px.
-  // Keep them in step with --tile-b and --accent in style.css.
+  // `swatch` is [covered cell, accent] — the two colours that identify a theme
+  // at 24px. The first is --bg with --cover composited over it, flattened to a
+  // hex because a swatch has no page behind it to be translucent against.
   const THEMES = [
-    { id: 'slate', name: 'Slate', dark: false, swatch: ['#dde3ef', '#4666f1'] },
-    { id: 'midnight', name: 'Midnight', dark: true, swatch: ['#242b40', '#7aa2ff'] },
-    { id: 'sakura', name: 'Sakura', dark: false, swatch: ['#ffd8e1', '#db2c5e'] },
-    { id: 'forest', name: 'Forest', dark: false, swatch: ['#d8e3cd', '#2f7d4f'] },
-    { id: 'sunset', name: 'Sunset', dark: false, swatch: ['#ffd9c2', '#c74c1c'] },
-    { id: 'carbon', name: 'Carbon', dark: true, swatch: ['#2c2e31', '#f0b429'] }
+    { id: 'slate', name: 'Slate', dark: false, swatch: ['#e2e5ec', '#3455e8'] },
+    { id: 'midnight', name: 'Midnight', dark: true, swatch: ['#21242d', '#7aa2ff'] },
+    { id: 'sakura', name: 'Sakura', dark: false, swatch: ['#f5e5e8', '#cc2255'] },
+    { id: 'forest', name: 'Forest', dark: false, swatch: ['#dee3da', '#2a7148'] },
+    { id: 'sunset', name: 'Sunset', dark: false, swatch: ['#f2e4d9', '#bd4718'] },
+    { id: 'carbon', name: 'Carbon', dark: true, swatch: ['#1d1e1f', '#f0b429'] }
   ];
 
   const byId = {};

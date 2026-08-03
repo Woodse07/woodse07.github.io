@@ -60,11 +60,28 @@ player did — and `ui.js` hands that straight to CSS as a per-cell animation
 delay. That is the entire mechanism behind the staggered reveal: no timers, no
 animation loop, one integer per cell.
 
+## The look
+
+The board is a hairline lattice drawn over the page, not a tray of tiles.
+Covered cells are a translucent wash; opened ones are nothing at all, so the
+page background shows straight through. Revealing does not add ink, it takes it
+away. Corners are square, there are no gradients and no shadows on the grid,
+and the chrome is the same hairline treatment so the whole page reads as one
+drawing.
+
+Cells carry their own right and bottom rule and the board closes the top and
+left of the frame, which is why no line in the lattice is ever drawn twice —
+doubled lines are what make a CSS grid look furry at small cell sizes.
+
 ## Animation
 
-Reveals ripple outward from the click, flags land with a spring, a struck mine
-throws a shockwave and shakes the board, and a cleared board runs a diagonal
-sweep. Every one of those rules pairs its animation with a static end state, so
+Nothing overshoots and nothing bounces. The cover leaves along a straight edge,
+wiping upward, rippling outward from the click; numbers fade up two pixels; a
+struck mine fills red and throws a square shockwave; a cleared board runs a
+diagonal tint across the lattice. Durations sit between 120 and 200ms, on
+easings that decelerate without springing past their mark.
+
+Every one of those rules pairs its animation with a static end state, so
 `prefers-reduced-motion: reduce` collapses the timing without leaving anything
 invisible or half-drawn.
 
@@ -74,5 +91,12 @@ The board is a real `role="grid"` of buttons with a roving tabindex, so it is
 fully playable from the keyboard, and each cell's label names its row, column
 and state. The live region announces the result of a game and the flag-mode
 toggle — and nothing else, because a running commentary on every reveal would
-be unbearable. Number colours are picked to clear WCAG AA against the open-cell
-background in all six themes.
+be unbearable. Number colours are picked to clear WCAG AA (4.6:1 or better)
+against the page background in all six themes.
+
+One deliberate exception, and it is worth knowing about: a covered cell differs
+from an empty opened one by the wash alone, which is about 1.3:1 — well under
+the 3:1 that WCAG 1.4.11 asks of a state indicator. That is the cost of the
+transparent treatment. Raising `--cover` in `style.css` buys the contrast back
+at the expense of the look; the cell's accessible name states the state either
+way.

@@ -3,6 +3,10 @@
  * Every colour is a custom property set on [data-theme]; nothing below the
  * theme blocks names a literal colour, so a new theme is a new block and
  * nothing else. Animation timing lives in :root for the same reason.
+ *
+ * The board is drawn as a hairline lattice over the page: covered cells are a
+ * translucent wash, opened cells are nothing at all. Revealing does not add
+ * ink, it takes it away, and the page background shows through the hole.
  */
 
 /* --------------------------------------------------------------- tokens */
@@ -11,164 +15,154 @@
   --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-num: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-  --t-fast: 110ms;
-  --t-mid: 220ms;
-  --t-reveal: 300ms;
-  --ease: cubic-bezier(.2, .6, .3, 1);
-  --ease-out: cubic-bezier(.16, 1, .3, 1);
-  --spring: cubic-bezier(.34, 1.56, .64, 1);
+  --t-fast: 90ms;
+  --t-mid: 200ms;
+  --t-reveal: 170ms;
+  /* Sharp easings only. Nothing here overshoots — an element that springs past
+   * its mark is the bouncy register this design is deliberately not in. */
+  --ease: cubic-bezier(.3, 0, .2, 1);
+  --ease-out: cubic-bezier(.2, 0, 0, 1);
 
   /* Delay per ripple ring. The engine caps the ring count, so the longest
-   * possible reveal stays under about half a second. */
-  --stagger: 22ms;
+   * possible reveal stays a little over a third of a second. */
+  --stagger: 16ms;
 
-  --radius-lg: 18px;
-  --radius-md: 11px;
-  --radius-sm: 8px;
+  /* Corners are square by intent; these exist so the two places that want a
+   * softened edge stay consistent with each other. */
+  --radius: 3px;
+  --hair: 1px;
 }
 
 /* --------------------------------------------------------------- themes */
 
 [data-theme="slate"] {
   --bg: #eef1f6;
-  --veil: rgba(238, 241, 246, .74);
-  --surface: #ffffff;
-  --surface-2: #e4e8f0;
-  --line: #d5dae5;
+  --veil: rgba(238, 241, 246, .72);
+  --panel: rgba(27, 32, 48, .03);
+  --line: rgba(27, 32, 48, .16);
+  --grid: rgba(27, 32, 48, .14);
+  --cover: rgba(27, 32, 48, .13);
+  --cover-hover: rgba(27, 32, 48, .2);
+  --cover-press: rgba(27, 32, 48, .28);
   --text: #1b2030;
-  --text-dim: #5b6478;
-  --accent: #4666f1;
+  --text-dim: #545d70;
+  --accent: #3455e8;
   --accent-ink: #ffffff;
-  --tile-a: #fdfdff;
-  --tile-b: #dde3ef;
-  --tile-hover: #eef1fa;
-  --open: #e3e7f0;
-  --open-line: #d7dceb;
-  --danger: #d93b3b;
-  --flag: #e05252;
-  --ring: #4666f1;
-  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .9) inset, 0 1px 2px rgba(27, 32, 48, .12);
-  --card-shadow: 0 24px 60px -20px rgba(27, 32, 48, .35);
-  --n1: #145ae5; --n2: #14744e; --n3: #c22b2b; --n4: #664bd7;
-  --n5: #a44c08; --n6: #0b717c; --n7: #414a63; --n8: #6f6250;
+  --accent-wash: rgba(52, 85, 232, .16);
+  --danger: #c62828;
+  --flag: #c62828;
+  --ring: #3455e8;
+  --card-shadow: 0 20px 50px -24px rgba(27, 32, 48, .5);
+  --n1: #1550d8; --n2: #146848; --n3: #b62525; --n4: #5b3fd0;
+  --n5: #96450a; --n6: #0a6772; --n7: #3b4459; --n8: #665a4a;
 }
 
 [data-theme="midnight"] {
   --bg: #12151f;
-  --veil: rgba(18, 21, 31, .76);
-  --surface: #1a1f2e;
-  --surface-2: #232a3d;
-  --line: #2b3348;
+  --veil: rgba(18, 21, 31, .74);
+  --panel: rgba(255, 255, 255, .03);
+  --line: rgba(255, 255, 255, .14);
+  --grid: rgba(255, 255, 255, .12);
+  --cover: rgba(255, 255, 255, .11);
+  --cover-hover: rgba(255, 255, 255, .18);
+  --cover-press: rgba(255, 255, 255, .25);
   --text: #e7ebf6;
-  --text-dim: #9aa4be;
+  --text-dim: #98a3bd;
   --accent: #7aa2ff;
   --accent-ink: #101527;
-  --tile-a: #313a55;
-  --tile-b: #242b40;
-  --tile-hover: #3a4463;
-  --open: #191e2c;
-  --open-line: #222a3c;
+  --accent-wash: rgba(122, 162, 255, .18);
   --danger: #ff6b6b;
   --flag: #ff8080;
   --ring: #7aa2ff;
-  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .06) inset, 0 2px 4px rgba(0, 0, 0, .35);
-  --card-shadow: 0 28px 70px -20px rgba(0, 0, 0, .8);
+  --card-shadow: 0 24px 60px -24px rgba(0, 0, 0, .85);
   --n1: #79a6ff; --n2: #4fd39a; --n3: #ff7a7a; --n4: #b39bff;
   --n5: #ffb057; --n6: #4fd8e0; --n7: #cfd6e8; --n8: #9aa4be;
 }
 
 [data-theme="sakura"] {
   --bg: #fff5f7;
-  --veil: rgba(255, 245, 247, .76);
-  --surface: #ffffff;
-  --surface-2: #ffe8ee;
-  --line: #f6d3dc;
+  --veil: rgba(255, 245, 247, .74);
+  --panel: rgba(122, 47, 70, .03);
+  --line: rgba(122, 47, 70, .18);
+  --grid: rgba(122, 47, 70, .16);
+  --cover: rgba(122, 47, 70, .13);
+  --cover-hover: rgba(122, 47, 70, .2);
+  --cover-press: rgba(122, 47, 70, .28);
   --text: #43222c;
-  --text-dim: #85606c;
-  --accent: #db2c5e;
+  --text-dim: #7d5964;
+  --accent: #cc2255;
   --accent-ink: #ffffff;
-  --tile-a: #fff2f5;
-  --tile-b: #ffd8e1;
-  --tile-hover: #ffe6ec;
-  --open: #ffeaf0;
-  --open-line: #fbdae2;
-  --danger: #d02f52;
-  --flag: #d02f52;
-  --ring: #db2c5e;
-  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .95) inset, 0 1px 2px rgba(122, 47, 70, .14);
-  --card-shadow: 0 24px 60px -20px rgba(122, 47, 70, .32);
-  --n1: #b63b75; --n2: #29775b; --n3: #c43329; --n4: #7b52c9;
-  --n5: #a2561a; --n6: #177381; --n7: #6c4b57; --n8: #85626d;
+  --accent-wash: rgba(204, 34, 85, .16);
+  --danger: #c01b45;
+  --flag: #c01b45;
+  --ring: #cc2255;
+  --card-shadow: 0 20px 50px -24px rgba(122, 47, 70, .45);
+  --n1: #ab3269; --n2: #256e54; --n3: #b62f26; --n4: #6f49b4;
+  --n5: #954e18; --n6: #156a77; --n7: #64454f; --n8: #7b5a64;
 }
 
 [data-theme="forest"] {
   --bg: #f0f4ec;
-  --veil: rgba(240, 244, 236, .76);
-  --surface: #ffffff;
-  --surface-2: #e2ebda;
-  --line: #d1ddc6;
+  --veil: rgba(240, 244, 236, .74);
+  --panel: rgba(30, 43, 33, .03);
+  --line: rgba(30, 43, 33, .18);
+  --grid: rgba(30, 43, 33, .16);
+  --cover: rgba(30, 43, 33, .13);
+  --cover-hover: rgba(30, 43, 33, .2);
+  --cover-press: rgba(30, 43, 33, .28);
   --text: #1e2b21;
-  --text-dim: #566b56;
-  --accent: #2f7d4f;
+  --text-dim: #4f6350;
+  --accent: #2a7148;
   --accent-ink: #ffffff;
-  --tile-a: #f4f8ef;
-  --tile-b: #d8e3cd;
-  --tile-hover: #e8f0e0;
-  --open: #e5ecdd;
-  --open-line: #d6e0ca;
-  --danger: #c2442f;
-  --flag: #c2442f;
-  --ring: #2f7d4f;
-  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .9) inset, 0 1px 2px rgba(30, 43, 33, .14);
-  --card-shadow: 0 24px 60px -20px rgba(30, 43, 33, .34);
-  --n1: #2c6ba8; --n2: #287241; --n3: #b6402c; --n4: #6b53b5;
-  --n5: #975712; --n6: #147079; --n7: #46543f; --n8: #606a59;
+  --accent-wash: rgba(42, 113, 72, .18);
+  --danger: #b23a26;
+  --flag: #b23a26;
+  --ring: #2a7148;
+  --card-shadow: 0 20px 50px -24px rgba(30, 43, 33, .45);
+  --n1: #2a659f; --n2: #256a3d; --n3: #ab3c29; --n4: #6250aa;
+  --n5: #8c5010; --n6: #136771; --n7: #414e3b; --n8: #596351;
 }
 
 [data-theme="sunset"] {
   --bg: #fff4ec;
-  --veil: rgba(255, 244, 236, .76);
-  --surface: #ffffff;
-  --surface-2: #ffe5d5;
-  --line: #f7d5c1;
+  --veil: rgba(255, 244, 236, .74);
+  --panel: rgba(90, 47, 25, .03);
+  --line: rgba(90, 47, 25, .18);
+  --grid: rgba(90, 47, 25, .16);
+  --cover: rgba(90, 47, 25, .13);
+  --cover-hover: rgba(90, 47, 25, .2);
+  --cover-press: rgba(90, 47, 25, .28);
   --text: #38231a;
-  --text-dim: #7a5a48;
-  --accent: #c74c1c;
+  --text-dim: #74553f;
+  --accent: #bd4718;
   --accent-ink: #ffffff;
-  --tile-a: #fff5ee;
-  --tile-b: #ffd9c2;
-  --tile-hover: #ffe8db;
-  --open: #ffe9dc;
-  --open-line: #f9d9c6;
-  --danger: #c62f2f;
-  --flag: #c62f2f;
-  --ring: #c74c1c;
-  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .92) inset, 0 1px 2px rgba(90, 47, 25, .16);
-  --card-shadow: 0 24px 60px -20px rgba(90, 47, 25, .34);
-  --n1: #2b6ca8; --n2: #27754d; --n3: #c62f2f; --n4: #7b4fbe;
-  --n5: #a7520d; --n6: #14757f; --n7: #5c4438; --n8: #7d6457;
+  --accent-wash: rgba(189, 71, 24, .18);
+  --danger: #b92b2b;
+  --flag: #b92b2b;
+  --ring: #bd4718;
+  --card-shadow: 0 20px 50px -24px rgba(90, 47, 25, .45);
+  --n1: #2a659f; --n2: #256b47; --n3: #b62b2b; --n4: #7048ae;
+  --n5: #9c4c0c; --n6: #136a74; --n7: #553f34; --n8: #735c50;
 }
 
 [data-theme="carbon"] {
   --bg: #0e0f10;
-  --veil: rgba(14, 15, 16, .78);
-  --surface: #17181a;
-  --surface-2: #202225;
-  --line: #2a2c30;
+  --veil: rgba(14, 15, 16, .76);
+  --panel: rgba(255, 255, 255, .03);
+  --line: rgba(255, 255, 255, .16);
+  --grid: rgba(255, 255, 255, .13);
+  --cover: rgba(255, 255, 255, .11);
+  --cover-hover: rgba(255, 255, 255, .18);
+  --cover-press: rgba(255, 255, 255, .25);
   --text: #f3f3f1;
   --text-dim: #a3a39f;
   --accent: #f0b429;
   --accent-ink: #17181a;
-  --tile-a: #2c2e31;
-  --tile-b: #202225;
-  --tile-hover: #35383c;
-  --open: #151617;
-  --open-line: #1e2022;
+  --accent-wash: rgba(240, 180, 41, .16);
   --danger: #ff5c48;
   --flag: #f0b429;
   --ring: #f0b429;
-  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 2px 4px rgba(0, 0, 0, .5);
-  --card-shadow: 0 28px 70px -20px rgba(0, 0, 0, .85);
+  --card-shadow: 0 24px 60px -24px rgba(0, 0, 0, .9);
   --n1: #6fb2ff; --n2: #5fd08a; --n3: #ff7f6b; --n4: #c79bff;
   --n5: #f0b429; --n6: #58d6dd; --n7: #e6e6e2; --n8: #a3a39f;
 }
@@ -235,50 +229,45 @@ body {
   align-items: center;
   gap: 10px;
   margin: 0;
-  font-size: clamp(1.05rem, 1.1rem + .6vw, 1.55rem);
-  font-weight: 650;
-  letter-spacing: -.02em;
+  font-size: clamp(1.02rem, 1.05rem + .5vw, 1.4rem);
+  font-weight: 600;
+  letter-spacing: -.01em;
 }
 
 .wordmark-icon {
-  width: 1.1em; height: 1.1em;
+  width: 1.05em; height: 1.05em;
   color: var(--accent);
 }
 
 .themes {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   padding: 5px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  border: var(--hair) solid var(--line);
+  border-radius: var(--radius);
 }
 
 .swatch {
-  width: 26px; height: 26px;
+  width: 24px; height: 24px;
   padding: 0;
   border: 0;
-  border-radius: 50%;
   background: none;
   cursor: pointer;
   display: grid;
   place-items: center;
-  transition: transform var(--t-fast) var(--ease);
 }
 
 .swatch-dot {
-  width: 18px; height: 18px;
-  border-radius: 50%;
-  /* Half base, half accent: the two colours that actually tell the themes
-   * apart at this size. */
+  width: 100%; height: 100%;
+  /* Half wash, half accent: the two colours that actually tell the themes
+   * apart at this size. Square, like everything else on the page. */
   background: linear-gradient(135deg, var(--swatch-a) 0 50%, var(--swatch-b) 50% 100%);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, .12) inset;
-  transition: transform var(--t-mid) var(--spring);
+  box-shadow: 0 0 0 var(--hair) var(--line) inset;
+  transition: box-shadow var(--t-fast) var(--ease);
 }
 
-.swatch:hover .swatch-dot { transform: scale(1.14); }
-.swatch[aria-checked="true"] { box-shadow: 0 0 0 2px var(--accent); }
-.swatch[aria-checked="true"] .swatch-dot { transform: scale(.82); }
+.swatch:hover .swatch-dot { box-shadow: 0 0 0 var(--hair) var(--text-dim) inset; }
+.swatch[aria-checked="true"] .swatch-dot { box-shadow: 0 0 0 2px var(--text) inset; }
 
 /* --------------------------------------------------------------- controls */
 
@@ -292,68 +281,61 @@ body {
 
 .segmented {
   display: flex;
-  gap: 3px;
-  padding: 4px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  border: var(--hair) solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
 }
 
 .seg {
   border: 0;
-  border-radius: 999px;
-  padding: 7px 15px;
+  border-left: var(--hair) solid var(--line);
+  padding: 8px 16px;
   background: transparent;
   color: var(--text-dim);
   font: inherit;
-  font-size: .87rem;
-  font-weight: 550;
+  font-size: .84rem;
+  font-weight: 500;
+  letter-spacing: .01em;
   cursor: pointer;
   transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
 }
 
-.seg:hover { background: var(--surface-2); color: var(--text); }
+.seg:first-child { border-left: 0; }
+.seg:hover { background: var(--cover); color: var(--text); }
 
 .seg[aria-checked="true"] {
-  background: var(--accent);
-  color: var(--accent-ink);
+  background: var(--text);
+  color: var(--bg);
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  border: 1px solid transparent;
-  border-radius: 999px;
-  padding: 9px 16px;
+  border: var(--hair) solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 15px;
+  background: transparent;
+  color: var(--text);
   font: inherit;
-  font-size: .87rem;
-  font-weight: 550;
+  font-size: .84rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: transform var(--t-fast) var(--ease),
-              background-color var(--t-fast) var(--ease),
-              border-color var(--t-fast) var(--ease);
+  transition: background-color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease),
+              color var(--t-fast) var(--ease);
 }
 
 .btn svg { width: 1.05em; height: 1.05em; }
-.btn:active { transform: scale(.97); }
+.btn:hover { background: var(--cover); }
 
-.btn-primary { background: var(--accent); color: var(--accent-ink); }
-.btn-primary:hover { filter: brightness(1.06); }
-
-.btn-ghost {
-  background: var(--surface);
-  border-color: var(--line);
-  color: var(--text);
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
 }
-.btn-ghost:hover { background: var(--surface-2); }
+.btn-primary:hover { background: var(--accent); filter: brightness(1.08); }
 
-.btn-toggle {
-  background: var(--surface);
-  border-color: var(--line);
-  color: var(--text-dim);
-}
-.btn-toggle:hover { background: var(--surface-2); }
 .btn-toggle[aria-pressed="true"] {
   background: var(--accent);
   border-color: var(--accent);
@@ -362,12 +344,17 @@ body {
 
 kbd {
   font: inherit;
-  font-size: .72em;
-  font-weight: 600;
-  padding: 1px 5px;
-  border-radius: 5px;
-  background: rgba(128, 128, 128, .22);
-  opacity: .85;
+  font-family: var(--font-num);
+  font-size: .68em;
+  padding: 2px 5px;
+  border: var(--hair) solid var(--line);
+  color: var(--text-dim);
+}
+
+.btn-primary kbd, .btn-toggle[aria-pressed="true"] kbd {
+  border-color: currentColor;
+  color: inherit;
+  opacity: .7;
 }
 
 .custom {
@@ -376,38 +363,44 @@ kbd {
   gap: 12px;
   flex-wrap: wrap;
   padding: 12px 14px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  animation: slide-down var(--t-mid) var(--ease) both;
+  background: var(--panel);
+  border: var(--hair) solid var(--line);
+  border-radius: var(--radius);
+  animation: fade-in var(--t-mid) var(--ease) both;
 }
 
 .custom label {
   display: grid;
   gap: 5px;
-  font-size: .74rem;
+  font-size: .68rem;
   font-weight: 600;
-  letter-spacing: .04em;
+  letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 
 .custom input {
-  width: 84px;
-  padding: 7px 10px;
+  width: 80px;
+  padding: 7px 9px;
   font: inherit;
   font-family: var(--font-num);
+  font-size: .85rem;
   color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
+  background: transparent;
+  border: var(--hair) solid var(--line);
+  border-radius: 0;
+}
+
+.custom input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -1px;
 }
 
 /* --------------------------------------------------------------- hud */
 
 .hud {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   align-items: center;
   justify-content: center;
 }
@@ -415,21 +408,19 @@ kbd {
 .stat {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 14px;
-  min-width: 96px;
+  gap: 8px;
+  padding: 6px 14px;
+  min-width: 92px;
   justify-content: center;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 999px;
+  border: var(--hair) solid var(--line);
+  border-radius: var(--radius);
   font-family: var(--font-num);
-  font-size: .95rem;
-  font-weight: 600;
+  font-size: .92rem;
   /* Tabular figures stop the timer from nudging the layout every second. */
   font-variant-numeric: tabular-nums;
 }
 
-.stat svg { width: 15px; height: 15px; color: var(--text-dim); }
+.stat svg { width: 14px; height: 14px; color: var(--text-dim); }
 .stat.is-negative { color: var(--danger); }
 .stat-best { color: var(--text-dim); }
 
@@ -444,15 +435,17 @@ kbd {
   padding: 4px;
 }
 
+/* No fill and no padding: the board is the lattice, nothing more. Cells carry
+ * their own right and bottom hairline, so the board only has to close the top
+ * and left of the frame — that way no line is ever drawn twice. */
 .board {
   display: grid;
   grid-template-columns: repeat(var(--cols, 9), var(--cell, 32px));
   grid-auto-rows: var(--cell, 32px);
-  gap: var(--gap, 2px);
-  padding: var(--gap, 2px);
-  background: var(--open);
-  border: 1px solid var(--open-line);
-  border-radius: var(--radius-lg);
+  gap: 0;
+  background: transparent;
+  border-top: var(--hair) solid var(--grid);
+  border-left: var(--hair) solid var(--grid);
   touch-action: manipulation;
 }
 
@@ -467,12 +460,14 @@ kbd {
   margin: 0;
   padding: 0;
   border: 0;
-  border-radius: calc(var(--cell, 32px) * .2);
-  background: var(--open);
+  border-right: var(--hair) solid var(--grid);
+  border-bottom: var(--hair) solid var(--grid);
+  border-radius: 0;
+  background: transparent;
   color: var(--text-dim);
-  font-family: var(--font);
-  font-size: calc(var(--cell, 32px) * .56);
-  font-weight: 700;
+  font-family: var(--font-num);
+  font-size: calc(var(--cell, 32px) * .5);
+  font-weight: 600;
   line-height: 1;
   display: grid;
   place-items: center;
@@ -482,29 +477,24 @@ kbd {
   touch-action: manipulation;
 }
 
-/* The lid: a raised tile drawn on top of the open cell underneath it. Reveal
- * is this element getting out of the way, which is why nothing has to move. */
+/* The cover: a translucent wash over the page, not a raised tile. Revealing
+ * wipes it away and leaves the background showing through the lattice. */
 .cell::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
-  border-radius: inherit;
-  background: linear-gradient(180deg, var(--tile-a), var(--tile-b));
-  box-shadow: var(--tile-shadow);
-  transition: transform var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+  background: var(--cover);
+  transition: background-color var(--t-fast) var(--ease);
 }
 
-.cell:not(.is-revealed):hover::before {
-  background: linear-gradient(180deg, var(--tile-hover), var(--tile-a));
-  transform: translateY(-1px);
-}
-
-.cell:not(.is-revealed):active::before { transform: scale(.92); }
+.cell:not(.is-revealed):hover::before { background: var(--cover-hover); }
+.cell:not(.is-revealed):active::before { background: var(--cover-press); }
 
 .cell:focus-visible {
   outline: 2px solid var(--ring);
-  outline-offset: 2px;
+  /* Inset, so the ring sits inside the lattice instead of straddling it. */
+  outline-offset: -2px;
   z-index: 3;
 }
 
@@ -513,8 +503,8 @@ kbd {
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 78%;
-  height: 78%;
+  width: 72%;
+  height: 72%;
 }
 
 .cell .v svg { width: 100%; height: 100%; }
@@ -528,88 +518,89 @@ kbd {
 .cell[data-n="7"] .v { color: var(--n7); }
 .cell[data-n="8"] .v { color: var(--n8); }
 
-/* Revealed. The static `opacity: 0` is what makes this work with animation
- * switched off; the keyframes only supply the movement in between. */
+/* Revealed. The static end state is on the rule itself, which is what makes
+ * this work with animation switched off; the keyframes only supply the
+ * movement in between. */
 .cell.is-revealed::before {
   opacity: 0;
-  animation: lid-lift var(--t-reveal) var(--ease-out) calc(var(--wave, 0) * var(--stagger)) both;
+  animation: cover-clear var(--t-reveal) var(--ease-out) calc(var(--wave, 0) * var(--stagger)) both;
 }
 
-.cell.is-revealed {
-  cursor: default;
-  background: var(--open);
-}
+.cell.is-revealed { cursor: default; }
 
 .cell.is-revealed .v {
-  animation: value-pop 280ms var(--spring) calc(var(--wave, 0) * var(--stagger)) both;
+  animation: value-in 150ms var(--ease-out) calc(var(--wave, 0) * var(--stagger)) both;
 }
 
 .cell.is-revealed[data-n]:not(.is-mine) { cursor: pointer; }
 
-/* Flags sit above the lid, so the tile stays closed underneath. */
+/* Flags sit above the cover, so the cell stays closed underneath. */
 .cell.is-flagged .v {
   color: var(--flag);
-  animation: flag-in 320ms var(--spring) both;
+  animation: flag-in 130ms var(--ease-out) both;
 }
 
 .cell .ghost {
   position: absolute;
   z-index: 2;
-  width: 78%;
-  height: 78%;
+  width: 72%;
+  height: 72%;
   color: var(--flag);
   pointer-events: none;
-  animation: flag-out 200ms var(--ease) both;
+  animation: flag-out 120ms var(--ease) both;
 }
 
 .cell .ghost svg { width: 100%; height: 100%; }
 
 /* A flag that turned out to be wrong keeps its flag and gets struck through —
  * clearer than swapping in a mine, which would read as "there was one here". */
-.cell.is-wrong .v { color: var(--danger); opacity: .55; }
+.cell.is-wrong .v { color: var(--danger); opacity: .5; }
 
 .cell.is-wrong::after {
   content: "";
   position: absolute;
   z-index: 2;
-  left: 12%;
-  right: 12%;
-  height: 2px;
-  border-radius: 2px;
+  left: 14%;
+  right: 14%;
+  height: var(--hair);
   background: var(--danger);
   transform: rotate(-45deg);
-  animation: strike 240ms var(--ease-out) calc(var(--wave, 0) * var(--stagger)) both;
+  animation: strike 160ms var(--ease-out) calc(var(--wave, 0) * var(--stagger)) both;
 }
 
 .cell.is-mine .v { color: var(--text); }
 
-.cell.is-boom {
+.cell.is-boom::before {
+  opacity: 1;
   background: var(--danger);
+  animation: none;
 }
 
 .cell.is-boom .v {
-  color: var(--accent-ink);
-  animation: boom 420ms var(--spring) both;
+  color: var(--bg);
+  animation: value-in 120ms var(--ease-out) both;
 }
 
-/* The shockwave ring, drawn once from the cell that went off. */
+/* The shockwave: a square ring, drawn once from the cell that went off. */
 .cell.is-boom::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 2;
-  border-radius: 50%;
-  border: 2px solid var(--danger);
+  border: var(--hair) solid var(--danger);
   pointer-events: none;
-  animation: shock 620ms var(--ease-out) both;
+  animation: shock 480ms var(--ease-out) both;
 }
 
-.cell.is-nudge { animation: nudge 260ms var(--ease); }
+.cell.is-nudge::before { animation: nudge 200ms var(--ease); }
 
-.board.is-lost { animation: shake 460ms var(--ease); }
+.board.is-lost { animation: jolt 260ms var(--ease); }
 
+/* The win sweep is a tint running diagonally across the lattice — no bounce,
+ * nothing moves. It rides on the cell itself rather than the cover, because by
+ * then most covers have been wiped to nothing and would sweep invisibly. */
 .board.is-won .cell {
-  animation: win-wave 620ms var(--ease-out) calc(var(--wave, 0) * 26ms) both;
+  animation: win-sweep 460ms var(--ease-out) calc(var(--wave, 0) * 18ms) both;
 }
 
 /* Flag mode makes every tap a flag, so say so on the cursor too. */
@@ -624,36 +615,37 @@ kbd {
   display: grid;
   place-items: center;
   background: var(--veil);
-  backdrop-filter: blur(7px);
-  -webkit-backdrop-filter: blur(7px);
-  animation: fade-in 200ms var(--ease) both;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: fade-in 160ms var(--ease) both;
 }
 
 .overlay-card {
-  width: min(340px, 86vw);
-  padding: 26px 26px 22px;
+  width: min(330px, 86vw);
+  padding: 24px 26px 22px;
   text-align: center;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  background: var(--bg);
+  border: var(--hair) solid var(--line);
+  border-radius: var(--radius);
   box-shadow: var(--card-shadow);
-  animation: card-in 420ms var(--spring) 60ms both;
+  animation: card-in 200ms var(--ease-out) 40ms both;
 }
 
 .overlay-eyebrow {
-  margin: 0 0 6px;
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .12em;
+  margin: 0 0 8px;
+  font-family: var(--font-num);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .16em;
   text-transform: uppercase;
   color: var(--text-dim);
 }
 
 .overlay-title {
   margin: 0 0 8px;
-  font-size: 1.35rem;
-  font-weight: 650;
-  letter-spacing: -.02em;
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: -.01em;
 }
 
 .overlay.is-won .overlay-title { color: var(--accent); }
@@ -661,7 +653,7 @@ kbd {
 .overlay-detail {
   margin: 0 0 20px;
   color: var(--text-dim);
-  font-size: .92rem;
+  font-size: .88rem;
   font-variant-numeric: tabular-nums;
 }
 
@@ -684,31 +676,32 @@ kbd {
 
 .hint {
   margin: 0;
-  font-size: .8rem;
+  font-size: .78rem;
   color: var(--text-dim);
 }
 
 /* --------------------------------------------------------------- motion */
 
-@keyframes lid-lift {
-  from { opacity: 1; transform: scale(1); }
-  60%  { opacity: .3; }
-  to   { opacity: 0; transform: scale(1.14); }
+/* A hard wipe upward rather than a fade: the cover leaves along a straight
+ * edge, which is the same geometry as the lattice it sits in. */
+@keyframes cover-clear {
+  from { opacity: 1; clip-path: inset(0 0 0 0); }
+  to   { opacity: 0; clip-path: inset(0 0 100% 0); }
 }
 
-@keyframes value-pop {
-  from { opacity: 0; transform: scale(.4); }
-  to   { opacity: 1; transform: scale(1); }
+@keyframes value-in {
+  from { opacity: 0; transform: translateY(2px); }
+  to   { opacity: 1; transform: none; }
 }
 
 @keyframes flag-in {
-  from { opacity: 0; transform: translateY(-45%) scale(.4) rotate(-16deg); }
+  from { opacity: 0; transform: translateY(-3px); }
   to   { opacity: 1; transform: none; }
 }
 
 @keyframes flag-out {
-  from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(.5) rotate(-14deg); }
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 
 @keyframes strike {
@@ -716,36 +709,26 @@ kbd {
   to   { opacity: 1; transform: rotate(-45deg) scaleX(1); }
 }
 
-@keyframes boom {
-  from { transform: scale(.3); }
-  60%  { transform: scale(1.25); }
-  to   { transform: scale(1); }
-}
-
 @keyframes shock {
-  from { opacity: .8; transform: scale(.3); }
-  to   { opacity: 0; transform: scale(3.2); }
+  from { opacity: .9; transform: scale(1); }
+  to   { opacity: 0; transform: scale(3.4); }
 }
 
 @keyframes nudge {
-  0%, 100% { transform: translateX(0); }
-  25%      { transform: translateX(-2px); }
-  75%      { transform: translateX(2px); }
+  0%, 100% { background-color: var(--cover); }
+  50%      { background-color: var(--cover-press); }
 }
 
-@keyframes shake {
+@keyframes jolt {
   0%, 100% { transform: translateX(0); }
-  15%      { transform: translateX(-6px); }
-  30%      { transform: translateX(5px); }
-  45%      { transform: translateX(-4px); }
-  60%      { transform: translateX(3px); }
-  80%      { transform: translateX(-2px); }
+  25%      { transform: translateX(-3px); }
+  75%      { transform: translateX(3px); }
 }
 
-@keyframes win-wave {
-  0%   { transform: translateY(0) scale(1); }
-  40%  { transform: translateY(-14%) scale(1.06); }
-  100% { transform: translateY(0) scale(1); }
+@keyframes win-sweep {
+  0%   { background-color: transparent; }
+  35%  { background-color: var(--accent-wash); }
+  100% { background-color: transparent; }
 }
 
 @keyframes fade-in {
@@ -754,12 +737,7 @@ kbd {
 }
 
 @keyframes card-in {
-  from { opacity: 0; transform: translateY(14px) scale(.94); }
-  to   { opacity: 1; transform: none; }
-}
-
-@keyframes slide-down {
-  from { opacity: 0; transform: translateY(-6px); }
+  from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
 }
 
@@ -771,7 +749,6 @@ kbd {
     animation-delay: 0ms !important;
     transition-duration: 1ms !important;
   }
-  .cell:not(.is-revealed):hover::before { transform: none; }
 }
 
 /* --------------------------------------------------------------- narrow */
@@ -779,7 +756,7 @@ kbd {
 @media (max-width: 640px) {
   .topbar { justify-content: center; }
   .toolbar { justify-content: center; }
-  .seg { padding: 7px 11px; font-size: .8rem; }
-  .stat { min-width: 84px; padding: 6px 11px; font-size: .88rem; }
+  .seg { padding: 8px 12px; font-size: .78rem; }
+  .stat { min-width: 80px; padding: 6px 11px; font-size: .86rem; }
   .hint { display: none; }
 }
