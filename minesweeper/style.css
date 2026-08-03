@@ -1,0 +1,785 @@
+/* Minesweeper — one stylesheet, six themes.
+ *
+ * Every colour is a custom property set on [data-theme]; nothing below the
+ * theme blocks names a literal colour, so a new theme is a new block and
+ * nothing else. Animation timing lives in :root for the same reason.
+ */
+
+/* --------------------------------------------------------------- tokens */
+
+:root {
+  --font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-num: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  --t-fast: 110ms;
+  --t-mid: 220ms;
+  --t-reveal: 300ms;
+  --ease: cubic-bezier(.2, .6, .3, 1);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --spring: cubic-bezier(.34, 1.56, .64, 1);
+
+  /* Delay per ripple ring. The engine caps the ring count, so the longest
+   * possible reveal stays under about half a second. */
+  --stagger: 22ms;
+
+  --radius-lg: 18px;
+  --radius-md: 11px;
+  --radius-sm: 8px;
+}
+
+/* --------------------------------------------------------------- themes */
+
+[data-theme="slate"] {
+  --bg: #eef1f6;
+  --veil: rgba(238, 241, 246, .74);
+  --surface: #ffffff;
+  --surface-2: #e4e8f0;
+  --line: #d5dae5;
+  --text: #1b2030;
+  --text-dim: #5b6478;
+  --accent: #4666f1;
+  --accent-ink: #ffffff;
+  --tile-a: #fdfdff;
+  --tile-b: #dde3ef;
+  --tile-hover: #eef1fa;
+  --open: #e3e7f0;
+  --open-line: #d7dceb;
+  --danger: #d93b3b;
+  --flag: #e05252;
+  --ring: #4666f1;
+  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .9) inset, 0 1px 2px rgba(27, 32, 48, .12);
+  --card-shadow: 0 24px 60px -20px rgba(27, 32, 48, .35);
+  --n1: #145ae5; --n2: #14744e; --n3: #c22b2b; --n4: #664bd7;
+  --n5: #a44c08; --n6: #0b717c; --n7: #414a63; --n8: #6f6250;
+}
+
+[data-theme="midnight"] {
+  --bg: #12151f;
+  --veil: rgba(18, 21, 31, .76);
+  --surface: #1a1f2e;
+  --surface-2: #232a3d;
+  --line: #2b3348;
+  --text: #e7ebf6;
+  --text-dim: #9aa4be;
+  --accent: #7aa2ff;
+  --accent-ink: #101527;
+  --tile-a: #313a55;
+  --tile-b: #242b40;
+  --tile-hover: #3a4463;
+  --open: #191e2c;
+  --open-line: #222a3c;
+  --danger: #ff6b6b;
+  --flag: #ff8080;
+  --ring: #7aa2ff;
+  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .06) inset, 0 2px 4px rgba(0, 0, 0, .35);
+  --card-shadow: 0 28px 70px -20px rgba(0, 0, 0, .8);
+  --n1: #79a6ff; --n2: #4fd39a; --n3: #ff7a7a; --n4: #b39bff;
+  --n5: #ffb057; --n6: #4fd8e0; --n7: #cfd6e8; --n8: #9aa4be;
+}
+
+[data-theme="sakura"] {
+  --bg: #fff5f7;
+  --veil: rgba(255, 245, 247, .76);
+  --surface: #ffffff;
+  --surface-2: #ffe8ee;
+  --line: #f6d3dc;
+  --text: #43222c;
+  --text-dim: #85606c;
+  --accent: #db2c5e;
+  --accent-ink: #ffffff;
+  --tile-a: #fff2f5;
+  --tile-b: #ffd8e1;
+  --tile-hover: #ffe6ec;
+  --open: #ffeaf0;
+  --open-line: #fbdae2;
+  --danger: #d02f52;
+  --flag: #d02f52;
+  --ring: #db2c5e;
+  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .95) inset, 0 1px 2px rgba(122, 47, 70, .14);
+  --card-shadow: 0 24px 60px -20px rgba(122, 47, 70, .32);
+  --n1: #b63b75; --n2: #29775b; --n3: #c43329; --n4: #7b52c9;
+  --n5: #a2561a; --n6: #177381; --n7: #6c4b57; --n8: #85626d;
+}
+
+[data-theme="forest"] {
+  --bg: #f0f4ec;
+  --veil: rgba(240, 244, 236, .76);
+  --surface: #ffffff;
+  --surface-2: #e2ebda;
+  --line: #d1ddc6;
+  --text: #1e2b21;
+  --text-dim: #566b56;
+  --accent: #2f7d4f;
+  --accent-ink: #ffffff;
+  --tile-a: #f4f8ef;
+  --tile-b: #d8e3cd;
+  --tile-hover: #e8f0e0;
+  --open: #e5ecdd;
+  --open-line: #d6e0ca;
+  --danger: #c2442f;
+  --flag: #c2442f;
+  --ring: #2f7d4f;
+  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .9) inset, 0 1px 2px rgba(30, 43, 33, .14);
+  --card-shadow: 0 24px 60px -20px rgba(30, 43, 33, .34);
+  --n1: #2c6ba8; --n2: #287241; --n3: #b6402c; --n4: #6b53b5;
+  --n5: #975712; --n6: #147079; --n7: #46543f; --n8: #606a59;
+}
+
+[data-theme="sunset"] {
+  --bg: #fff4ec;
+  --veil: rgba(255, 244, 236, .76);
+  --surface: #ffffff;
+  --surface-2: #ffe5d5;
+  --line: #f7d5c1;
+  --text: #38231a;
+  --text-dim: #7a5a48;
+  --accent: #c74c1c;
+  --accent-ink: #ffffff;
+  --tile-a: #fff5ee;
+  --tile-b: #ffd9c2;
+  --tile-hover: #ffe8db;
+  --open: #ffe9dc;
+  --open-line: #f9d9c6;
+  --danger: #c62f2f;
+  --flag: #c62f2f;
+  --ring: #c74c1c;
+  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .92) inset, 0 1px 2px rgba(90, 47, 25, .16);
+  --card-shadow: 0 24px 60px -20px rgba(90, 47, 25, .34);
+  --n1: #2b6ca8; --n2: #27754d; --n3: #c62f2f; --n4: #7b4fbe;
+  --n5: #a7520d; --n6: #14757f; --n7: #5c4438; --n8: #7d6457;
+}
+
+[data-theme="carbon"] {
+  --bg: #0e0f10;
+  --veil: rgba(14, 15, 16, .78);
+  --surface: #17181a;
+  --surface-2: #202225;
+  --line: #2a2c30;
+  --text: #f3f3f1;
+  --text-dim: #a3a39f;
+  --accent: #f0b429;
+  --accent-ink: #17181a;
+  --tile-a: #2c2e31;
+  --tile-b: #202225;
+  --tile-hover: #35383c;
+  --open: #151617;
+  --open-line: #1e2022;
+  --danger: #ff5c48;
+  --flag: #f0b429;
+  --ring: #f0b429;
+  --tile-shadow: 0 1px 0 rgba(255, 255, 255, .05) inset, 0 2px 4px rgba(0, 0, 0, .5);
+  --card-shadow: 0 28px 70px -20px rgba(0, 0, 0, .85);
+  --n1: #6fb2ff; --n2: #5fd08a; --n3: #ff7f6b; --n4: #c79bff;
+  --n5: #f0b429; --n6: #58d6dd; --n7: #e6e6e2; --n8: #a3a39f;
+}
+
+/* --------------------------------------------------------------- shell */
+
+* { box-sizing: border-box; }
+
+/* Blocks below set `display`, which would otherwise beat the browser's own
+ * rule for [hidden] and leave a hidden element on screen. */
+[hidden] { display: none !important; }
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  /* The board sizes itself to the viewport, so the page itself should not
+   * scroll — a bouncing page under a drag-to-flag gesture is miserable. */
+  overflow: hidden;
+  overscroll-behavior: none;
+  transition: background-color var(--t-mid) var(--ease), color var(--t-mid) var(--ease);
+}
+
+.sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.app {
+  height: 100%;
+  max-width: 1180px;
+  margin-inline: auto;
+  padding: clamp(10px, 2.2vw, 22px) clamp(12px, 3vw, 28px) clamp(8px, 2vw, 18px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 1.6vw, 16px);
+}
+
+/* --------------------------------------------------------------- topbar */
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.wordmark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: clamp(1.05rem, 1.1rem + .6vw, 1.55rem);
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+
+.wordmark-icon {
+  width: 1.1em; height: 1.1em;
+  color: var(--accent);
+}
+
+.themes {
+  display: flex;
+  gap: 8px;
+  padding: 5px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.swatch {
+  width: 26px; height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform var(--t-fast) var(--ease);
+}
+
+.swatch-dot {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  /* Half base, half accent: the two colours that actually tell the themes
+   * apart at this size. */
+  background: linear-gradient(135deg, var(--swatch-a) 0 50%, var(--swatch-b) 50% 100%);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .12) inset;
+  transition: transform var(--t-mid) var(--spring);
+}
+
+.swatch:hover .swatch-dot { transform: scale(1.14); }
+.swatch[aria-checked="true"] { box-shadow: 0 0 0 2px var(--accent); }
+.swatch[aria-checked="true"] .swatch-dot { transform: scale(.82); }
+
+/* --------------------------------------------------------------- controls */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.segmented {
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+}
+
+.seg {
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 15px;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: .87rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+
+.seg:hover { background: var(--surface-2); color: var(--text); }
+
+.seg[aria-checked="true"] {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font: inherit;
+  font-size: .87rem;
+  font-weight: 550;
+  cursor: pointer;
+  transition: transform var(--t-fast) var(--ease),
+              background-color var(--t-fast) var(--ease),
+              border-color var(--t-fast) var(--ease);
+}
+
+.btn svg { width: 1.05em; height: 1.05em; }
+.btn:active { transform: scale(.97); }
+
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { filter: brightness(1.06); }
+
+.btn-ghost {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--text);
+}
+.btn-ghost:hover { background: var(--surface-2); }
+
+.btn-toggle {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--text-dim);
+}
+.btn-toggle:hover { background: var(--surface-2); }
+.btn-toggle[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+kbd {
+  font: inherit;
+  font-size: .72em;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(128, 128, 128, .22);
+  opacity: .85;
+}
+
+.custom {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  animation: slide-down var(--t-mid) var(--ease) both;
+}
+
+.custom label {
+  display: grid;
+  gap: 5px;
+  font-size: .74rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.custom input {
+  width: 84px;
+  padding: 7px 10px;
+  font: inherit;
+  font-family: var(--font-num);
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+/* --------------------------------------------------------------- hud */
+
+.hud {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  min-width: 96px;
+  justify-content: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: var(--font-num);
+  font-size: .95rem;
+  font-weight: 600;
+  /* Tabular figures stop the timer from nudging the layout every second. */
+  font-variant-numeric: tabular-nums;
+}
+
+.stat svg { width: 15px; height: 15px; color: var(--text-dim); }
+.stat.is-negative { color: var(--danger); }
+.stat-best { color: var(--text-dim); }
+
+/* --------------------------------------------------------------- board */
+
+.board-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 9), var(--cell, 32px));
+  grid-auto-rows: var(--cell, 32px);
+  gap: var(--gap, 2px);
+  padding: var(--gap, 2px);
+  background: var(--open);
+  border: 1px solid var(--open-line);
+  border-radius: var(--radius-lg);
+  touch-action: manipulation;
+}
+
+/* Rows exist for role="grid" only; `contents` keeps them out of the layout so
+ * the cells remain direct grid items. */
+.row { display: contents; }
+
+.cell {
+  position: relative;
+  width: var(--cell, 32px);
+  height: var(--cell, 32px);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--cell, 32px) * .2);
+  background: var(--open);
+  color: var(--text-dim);
+  font-family: var(--font);
+  font-size: calc(var(--cell, 32px) * .56);
+  font-weight: 700;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  isolation: isolate;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* The lid: a raised tile drawn on top of the open cell underneath it. Reveal
+ * is this element getting out of the way, which is why nothing has to move. */
+.cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, var(--tile-a), var(--tile-b));
+  box-shadow: var(--tile-shadow);
+  transition: transform var(--t-fast) var(--ease), background-color var(--t-fast) var(--ease);
+}
+
+.cell:not(.is-revealed):hover::before {
+  background: linear-gradient(180deg, var(--tile-hover), var(--tile-a));
+  transform: translateY(-1px);
+}
+
+.cell:not(.is-revealed):active::before { transform: scale(.92); }
+
+.cell:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  z-index: 3;
+}
+
+.cell .v {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 78%;
+  height: 78%;
+}
+
+.cell .v svg { width: 100%; height: 100%; }
+
+.cell[data-n="1"] .v { color: var(--n1); }
+.cell[data-n="2"] .v { color: var(--n2); }
+.cell[data-n="3"] .v { color: var(--n3); }
+.cell[data-n="4"] .v { color: var(--n4); }
+.cell[data-n="5"] .v { color: var(--n5); }
+.cell[data-n="6"] .v { color: var(--n6); }
+.cell[data-n="7"] .v { color: var(--n7); }
+.cell[data-n="8"] .v { color: var(--n8); }
+
+/* Revealed. The static `opacity: 0` is what makes this work with animation
+ * switched off; the keyframes only supply the movement in between. */
+.cell.is-revealed::before {
+  opacity: 0;
+  animation: lid-lift var(--t-reveal) var(--ease-out) calc(var(--wave, 0) * var(--stagger)) both;
+}
+
+.cell.is-revealed {
+  cursor: default;
+  background: var(--open);
+}
+
+.cell.is-revealed .v {
+  animation: value-pop 280ms var(--spring) calc(var(--wave, 0) * var(--stagger)) both;
+}
+
+.cell.is-revealed[data-n]:not(.is-mine) { cursor: pointer; }
+
+/* Flags sit above the lid, so the tile stays closed underneath. */
+.cell.is-flagged .v {
+  color: var(--flag);
+  animation: flag-in 320ms var(--spring) both;
+}
+
+.cell .ghost {
+  position: absolute;
+  z-index: 2;
+  width: 78%;
+  height: 78%;
+  color: var(--flag);
+  pointer-events: none;
+  animation: flag-out 200ms var(--ease) both;
+}
+
+.cell .ghost svg { width: 100%; height: 100%; }
+
+/* A flag that turned out to be wrong keeps its flag and gets struck through —
+ * clearer than swapping in a mine, which would read as "there was one here". */
+.cell.is-wrong .v { color: var(--danger); opacity: .55; }
+
+.cell.is-wrong::after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  left: 12%;
+  right: 12%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--danger);
+  transform: rotate(-45deg);
+  animation: strike 240ms var(--ease-out) calc(var(--wave, 0) * var(--stagger)) both;
+}
+
+.cell.is-mine .v { color: var(--text); }
+
+.cell.is-boom {
+  background: var(--danger);
+}
+
+.cell.is-boom .v {
+  color: var(--accent-ink);
+  animation: boom 420ms var(--spring) both;
+}
+
+/* The shockwave ring, drawn once from the cell that went off. */
+.cell.is-boom::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 50%;
+  border: 2px solid var(--danger);
+  pointer-events: none;
+  animation: shock 620ms var(--ease-out) both;
+}
+
+.cell.is-nudge { animation: nudge 260ms var(--ease); }
+
+.board.is-lost { animation: shake 460ms var(--ease); }
+
+.board.is-won .cell {
+  animation: win-wave 620ms var(--ease-out) calc(var(--wave, 0) * 26ms) both;
+}
+
+/* Flag mode makes every tap a flag, so say so on the cursor too. */
+.flag-mode .cell:not(.is-revealed) { cursor: crosshair; }
+
+/* --------------------------------------------------------------- overlay */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  background: var(--veil);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  animation: fade-in 200ms var(--ease) both;
+}
+
+.overlay-card {
+  width: min(340px, 86vw);
+  padding: 26px 26px 22px;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--card-shadow);
+  animation: card-in 420ms var(--spring) 60ms both;
+}
+
+.overlay-eyebrow {
+  margin: 0 0 6px;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.overlay-title {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  font-weight: 650;
+  letter-spacing: -.02em;
+}
+
+.overlay.is-won .overlay-title { color: var(--accent); }
+
+.overlay-detail {
+  margin: 0 0 20px;
+  color: var(--text-dim);
+  font-size: .92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.overlay-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* --------------------------------------------------------------- footer */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.hint {
+  margin: 0;
+  font-size: .8rem;
+  color: var(--text-dim);
+}
+
+/* --------------------------------------------------------------- motion */
+
+@keyframes lid-lift {
+  from { opacity: 1; transform: scale(1); }
+  60%  { opacity: .3; }
+  to   { opacity: 0; transform: scale(1.14); }
+}
+
+@keyframes value-pop {
+  from { opacity: 0; transform: scale(.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes flag-in {
+  from { opacity: 0; transform: translateY(-45%) scale(.4) rotate(-16deg); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes flag-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(.5) rotate(-14deg); }
+}
+
+@keyframes strike {
+  from { opacity: 0; transform: rotate(-45deg) scaleX(0); }
+  to   { opacity: 1; transform: rotate(-45deg) scaleX(1); }
+}
+
+@keyframes boom {
+  from { transform: scale(.3); }
+  60%  { transform: scale(1.25); }
+  to   { transform: scale(1); }
+}
+
+@keyframes shock {
+  from { opacity: .8; transform: scale(.3); }
+  to   { opacity: 0; transform: scale(3.2); }
+}
+
+@keyframes nudge {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-2px); }
+  75%      { transform: translateX(2px); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%      { transform: translateX(-6px); }
+  30%      { transform: translateX(5px); }
+  45%      { transform: translateX(-4px); }
+  60%      { transform: translateX(3px); }
+  80%      { transform: translateX(-2px); }
+}
+
+@keyframes win-wave {
+  0%   { transform: translateY(0) scale(1); }
+  40%  { transform: translateY(-14%) scale(1.06); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(14px) scale(.94); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Every rule above pairs its animation with a static end state, so switching
+ * the animations off changes the timing and nothing else. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 1ms !important;
+  }
+  .cell:not(.is-revealed):hover::before { transform: none; }
+}
+
+/* --------------------------------------------------------------- narrow */
+
+@media (max-width: 640px) {
+  .topbar { justify-content: center; }
+  .toolbar { justify-content: center; }
+  .seg { padding: 7px 11px; font-size: .8rem; }
+  .stat { min-width: 84px; padding: 6px 11px; font-size: .88rem; }
+  .hint { display: none; }
+}

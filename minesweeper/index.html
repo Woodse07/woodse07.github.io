@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Minesweeper</title>
+<meta name="description" content="A modern, themeable Minesweeper with crisp animations. Six themes, keyboard play, no build step.">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#eef1f6">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<!-- Themes are applied before first paint so a reload never flashes the wrong
+     palette on the way to the stored one. -->
+<script src="js/themes.js"></script>
+</head>
+<body>
+
+<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <symbol id="icon-flag" viewBox="0 0 24 24">
+      <path d="M6 21V4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M6 4.6h10.8a.7.7 0 0 1 .55 1.13L14.8 9l2.55 3.27a.7.7 0 0 1-.55 1.13H6z" fill="currentColor"/>
+    </symbol>
+    <symbol id="icon-mine" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="5.4" fill="currentColor"/>
+      <path d="M12 2.6v3.2M12 18.2v3.2M2.6 12h3.2M18.2 12h3.2M5.3 5.3l2.3 2.3M16.4 16.4l2.3 2.3M18.7 5.3l-2.3 2.3M7.6 16.4l-2.3 2.3"
+            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="icon-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="8.6" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 7.2V12l3.2 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-trophy" viewBox="0 0 24 24">
+      <path d="M7 4h10v4.5a5 5 0 0 1-10 0z" fill="currentColor"/>
+      <path d="M7 5.5H4.4v1.2A3.4 3.4 0 0 0 7.8 10M17 5.5h2.6v1.2A3.4 3.4 0 0 1 16.2 10"
+            fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      <path d="M12 13.4V17M8.6 20h6.8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="app">
+
+  <header class="topbar">
+    <h1 class="wordmark">
+      <svg class="wordmark-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-mine"/></svg>
+      Minesweeper
+    </h1>
+    <div class="themes" id="themes" role="radiogroup" aria-label="Colour theme"></div>
+  </header>
+
+  <div class="toolbar">
+    <div class="segmented" id="levels" role="radiogroup" aria-label="Difficulty"></div>
+    <button type="button" id="new-game" class="btn btn-primary">
+      New game <kbd>N</kbd>
+    </button>
+  </div>
+
+  <form class="custom" id="custom" hidden>
+    <label>Rows <input type="number" id="custom-rows" min="5" max="24" inputmode="numeric"></label>
+    <label>Columns <input type="number" id="custom-cols" min="5" max="40" inputmode="numeric"></label>
+    <label>Mines <input type="number" id="custom-mines" min="1" max="999" inputmode="numeric"></label>
+    <button type="submit" id="custom-apply" class="btn btn-ghost">Apply</button>
+  </form>
+
+  <div class="hud">
+    <div class="stat" title="Mines left to flag">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-mine"/></svg>
+      <span id="mine-count">10</span>
+      <span class="visually-hidden">mines left</span>
+    </div>
+    <div class="stat stat-time" title="Elapsed time">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-clock"/></svg>
+      <span id="timer">0:00</span>
+      <span class="visually-hidden">elapsed</span>
+    </div>
+    <div class="stat stat-best" title="Best time at this difficulty">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-trophy"/></svg>
+      <span id="best">—</span>
+      <span class="visually-hidden">best time</span>
+    </div>
+  </div>
+
+  <div class="board-wrap" id="board-wrap">
+    <div class="board" id="board" role="grid" aria-label="Minefield"></div>
+
+    <div class="overlay" id="overlay" hidden>
+      <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
+        <p class="overlay-eyebrow" id="overlay-eyebrow"></p>
+        <h2 class="overlay-title" id="overlay-title"></h2>
+        <p class="overlay-detail" id="overlay-detail"></p>
+        <div class="overlay-actions">
+          <button type="button" id="overlay-again" class="btn btn-primary">Play again</button>
+          <button type="button" id="overlay-dismiss" class="btn btn-ghost">See the board</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <button type="button" id="flag-mode" class="btn btn-toggle" aria-pressed="false">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#icon-flag"/></svg>
+      Flag mode <kbd>F</kbd>
+    </button>
+    <p class="hint">
+      Click to open · right-click or hold to flag · click a number to clear around it
+    </p>
+  </footer>
+
+  <p id="live" class="visually-hidden" role="status" aria-live="polite"></p>
+</div>
+
+<script src="js/game.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>
