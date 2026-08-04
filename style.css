@@ -1172,3 +1172,63 @@ button:focus-visible {
     display: none;
   }
 }
+
+/* --- Bike heatmap --- */
+
+/* Square rather than landscape. The riding runs 55 km north to south and 40 km
+   across, so a 4:3 stage fitted it to the height and left nearly half the width
+   empty; a square frame spends that space on the map instead. */
+.heat-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 78vh;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  overflow: hidden;
+}
+
+.heat-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* The map handles horizontal drags; vertical ones stay with the page so a
+     phone can still scroll past it. */
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+.heat-stage canvas:active {
+  cursor: grabbing;
+}
+
+.region-picker {
+  margin-top: 1.75rem;
+}
+
+.region-heading {
+  margin: 0 0 0.6rem;
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+  font-weight: normal;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.regions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* The selected region reads as pressed rather than merely hovered, so which
+   area the map is showing survives the mouse moving away. */
+.regions button[aria-pressed="true"] {
+  color: var(--paper);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.region-picker .sketch-note {
+  margin-top: 0.75rem;
+}
