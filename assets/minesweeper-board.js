@@ -475,32 +475,55 @@
 
   /* ---------- sizing ---------- */
 
+  // Small enough that expert fits a phone at all, big enough to still be worth
+  // aiming at. Below this the board scrolls sideways instead of shrinking.
+  var MIN_CELL = 16;
+  var MAX_CELL = 44;
+  // 62rem. Past this a board is only bigger, not better, and the page starts
+  // looking like a spreadsheet.
+  var MAX_WIDTH = 992;
+
   /* Cells are laid out in whole pixels rather than fractions so they stay
      square and land on pixel boundaries — a fractional cell is what makes the
-     hairlines between them shimmer while the page scrolls. */
+     hairlines between them shimmer while the page scrolls.
+
+     The board is also allowed out of the text column. Prose wants 38rem; a
+     thirty-wide grid squeezed into that has smaller cells than the sixteen-wide
+     one, which is how expert ended up looking smaller than intermediate. So the
+     width comes from the page rather than from the column, and the board hangs
+     out over both margins when it needs to. */
   function fit() {
-    var styles = global.getComputedStyle(el.stage);
-    var width =
-      el.stage.clientWidth -
-      parseFloat(styles.paddingLeft) -
-      parseFloat(styles.paddingRight);
-    // Unlike the standalone version this page scrolls like every other page on
-    // the site, so the board takes a share of the viewport rather than all of
-    // what is left below it.
-    var height = Math.max(240, global.innerHeight * 0.62);
+    var column = el.stage.parentNode;
+    var pagePad = 2 * parseFloat(global.getComputedStyle(document.body).paddingLeft);
+    // clientWidth excludes the scrollbar, so this can never overflow sideways.
+    var available = Math.min(document.documentElement.clientWidth - pagePad, MAX_WIDTH);
+    // Whatever is left below the header and the controls, so a fresh board is
+    // visible without scrolling to find its bottom row. Measured against the
+    // document rather than the viewport so that scrolling the page does not
+    // resize the board under the player. The floor matters on a short window,
+    // where honouring this literally would leave a grid of specks.
+    var top = el.stage.getBoundingClientRect().top + (global.pageYOffset || 0);
+    var height = Math.max(320, global.innerHeight - top - 20);
 
-    var size = Math.min(width / game.cols, height / game.rows);
-    var gap = size >= 26 ? 2 : 1;
-    size = Math.floor(
-      Math.min(
-        (width - gap * (game.cols - 1)) / game.cols,
-        (height - gap * (game.rows - 1)) / game.rows
-      )
+    // Each cell carries the lattice in its own right and bottom border and the
+    // board closes the top and left, so a board is exactly cols * cell + 1.
+    var size = Math.floor(
+      Math.min((available - 1) / game.cols, (height - 1) / game.rows)
     );
-    size = Math.max(15, Math.min(44, size));
-
+    size = Math.max(MIN_CELL, Math.min(MAX_CELL, size));
     board.style.setProperty("--ms-cell", size + "px");
-    board.style.setProperty("--ms-gap", gap + "px");
+
+    // The visible box is the board, or as much of it as fits. Anything wider
+    // than that scrolls inside the box rather than pushing the page sideways.
+    var boardWidth = game.cols * size + 1;
+    var box = Math.min(boardWidth, available);
+    var margin = Math.round((column.clientWidth - box) / 2);
+    el.stage.style.width = box + "px";
+    el.stage.style.marginLeft = margin + "px";
+    el.stage.style.marginRight = margin + "px";
+    // Panning is invisible until you try it, and a board with its right-hand
+    // columns off-screen otherwise just looks broken.
+    document.body.classList.toggle("ms-panning", boardWidth > box);
   }
 
   function scheduleFit() {

@@ -4,14 +4,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Minesweeper &mdash; Séamus Woods</title>
-  <meta name="description" content="Minesweeper written in plain JavaScript, played on frosted glass over the random walk.">
+  <meta name="description" content="Minesweeper written in plain JavaScript &mdash; no framework, no bundler, no dependencies.">
   <link rel="canonical" href="https://seamusw.oods.dev/minesweeper/">
   <!-- Social preview; see the home page for why. Per-page title and URL, so a
        link to the game unfurls as the game rather than as the site. -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Séamus Woods">
   <meta property="og:title" content="Minesweeper &mdash; Séamus Woods">
-  <meta property="og:description" content="Minesweeper written in plain JavaScript, played on frosted glass over the random walk.">
+  <meta property="og:description" content="Minesweeper written in plain JavaScript &mdash; no framework, no bundler, no dependencies.">
   <meta property="og:url" content="https://seamusw.oods.dev/minesweeper/">
   <meta property="og:image" content="https://seamusw.oods.dev/apple-touch-icon.png">
   <meta property="og:image:width" content="180">
@@ -85,8 +85,14 @@
       </span>
     </div>
 
+    <!-- Sized and centred by minesweeper-board.js: the box is the board, or as
+         much of it as the page can show. -->
     <div class="ms-stage" id="ms-stage">
-      <div class="ms-board" id="ms-board" role="grid" aria-label="Minefield"></div>
+      <!-- Expert is wider than a phone at any size worth tapping, so it pans
+           in here rather than pushing the page sideways. -->
+      <div class="ms-scroll">
+        <div class="ms-board" id="ms-board" role="grid" aria-label="Minefield"></div>
+      </div>
 
       <!-- Shown when a game ends, and dismissable, because the finished board
            is worth looking at. -->
@@ -103,6 +109,10 @@
       </div>
     </div>
 
+    <!-- Revealed by minesweeper-board.js only when the board really is wider
+         than the space it has, which on a phone is expert and nothing else. -->
+    <p class="ms-pan-hint">The board is wider than the screen &mdash; drag it sideways to see the rest.</p>
+
     <div class="ms-controls">
       <button type="button" id="ms-flag-mode" aria-pressed="false">
         <svg class="ms-btn-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="#ms-icon-flag"/></svg>
@@ -117,29 +127,19 @@
     <p id="ms-live" class="ms-sr" role="status" aria-live="polite"></p>
 
     <section>
-      <h2>How it works</h2>
+      <h2>How it&rsquo;s built</h2>
       <p>
-        The rules live in one file that never touches the page, and the page
-        lives in another that never decides anything about the game. A move
-        comes back as a list of the cells that changed, each carrying the
-        distance it sits from wherever you just clicked. That number goes onto
-        the cell as a custom property and the stylesheet turns it into an
-        animation delay, which is the whole reason the board opens as a ripple
-        rather than all at once &mdash; one integer per cell, and not a single
-        timer in the JavaScript.
+        The rules and the drawing are separate files: one holds the board and
+        never touches the page, the other draws it and never decides anything
+        about the game. A move comes back as the list of cells that changed,
+        each carrying the distance it sits from wherever you clicked, and the
+        stylesheet turns that number into an animation delay &mdash; which is
+        why the board opens as a ripple rather than all at once, with no timer
+        anywhere in the JavaScript.
       </p>
       <p>
-        The first click is always safe. Mines are laid <em>after</em> it lands,
-        avoiding the cell you clicked and its eight neighbours, so an opening
-        move can never lose the game and always opens a pocket to work from.
-        Clicking a number whose flags do not add up wobbles its neighbours
-        instead of quietly doing nothing.
-      </p>
-      <p>
-        The board is glass over the random walk running behind this page, so
-        the dots keep moving under a cleared square. Everything on the page is
-        hand-written HTML, CSS and JavaScript, and the whole game is about
-        twenty kilobytes.
+        Hand-written HTML, CSS and JavaScript, no framework and no
+        dependencies, about twenty kilobytes all in.
       </p>
     </section>
   </main>
