@@ -762,29 +762,38 @@ button:focus-visible {
   color: var(--ms-dim);
 }
 
-/* The glass. One frosted pane for the whole board: blurring per cell would be
-   the same picture at many times the cost. */
+/* Nothing but a positioned box for the overlay to fill. It used to be a padded,
+   bordered panel with the board sitting inside it, which framed the game as a
+   sandbox dropped onto the page rather than part of it. The glass moved onto
+   the grid itself, below, so the frosted edge is the board's own edge. Width,
+   margins and centring are set by minesweeper-board.js. */
 .ms-stage {
   position: relative;
-  display: grid;
-  place-items: center;
-  padding: 0.7rem;
-  background: var(--ms-glass);
-  border: 1px solid var(--ms-glass-edge);
-  -webkit-backdrop-filter: blur(9px) saturate(112%);
-  backdrop-filter: blur(9px) saturate(112%);
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) inset;
 }
 
-/* Cells carry their own right and bottom rule and the board closes the top and
+.ms-scroll {
+  overflow-x: auto;
+  /* Panning a wide board should not turn into a back-swipe halfway across. */
+  overscroll-behavior-x: contain;
+}
+
+/* The glass. One frosted pane, and it is exactly the grid: blurring per cell
+   would be the same picture at many times the cost.
+
+   Cells carry their own right and bottom rule and the board closes the top and
    left of the frame, so no line in the lattice is ever drawn twice — doubled
    lines are what make a grid look furry at small cell sizes. */
 .ms-board {
   display: grid;
+  width: -webkit-max-content;
+  width: max-content;
   grid-template-columns: repeat(var(--ms-cols, 9), var(--ms-cell, 30px));
   grid-auto-rows: var(--ms-cell, 30px);
+  background: var(--ms-glass);
   border-top: 1px solid var(--ms-grid);
   border-left: 1px solid var(--ms-grid);
+  -webkit-backdrop-filter: blur(9px) saturate(112%);
+  backdrop-filter: blur(9px) saturate(112%);
   touch-action: manipulation;
 }
 
@@ -977,6 +986,17 @@ button:focus-visible {
 /* Flag mode makes every click a flag, so say so on the cursor too. */
 .ms-flagging .ms-cell:not(.is-revealed) {
   cursor: crosshair;
+}
+
+.ms-pan-hint {
+  display: none;
+  margin: 0.7rem 0 0;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+}
+
+.ms-panning .ms-pan-hint {
+  display: block;
 }
 
 .ms-controls {
