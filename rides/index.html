@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bike heatmap &mdash; Séamus Woods</title>
+  <meta name="description" content="Every outdoor bike ride since August 2024, drawn as a heatmap from Strava GPS tracks.">
+  <link rel="canonical" href="https://seamusw.oods.dev/rides/">
+  <!-- Social preview; see the home page for why. Per-page title and URL, so a
+       link to the heatmap unfurls as the heatmap rather than as the site. -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Séamus Woods">
+  <meta property="og:title" content="Bike heatmap &mdash; Séamus Woods">
+  <meta property="og:description" content="Every outdoor bike ride since August 2024, drawn as a heatmap from Strava GPS tracks.">
+  <meta property="og:url" content="https://seamusw.oods.dev/rides/">
+  <meta property="og:image" content="https://seamusw.oods.dev/apple-touch-icon.png">
+  <meta property="og:image:width" content="180">
+  <meta property="og:image:height" content="180">
+  <meta property="og:image:alt" content="Site icon: a trail of dots stepping across paper, with the walker in rust.">
+  <meta name="twitter:card" content="summary">
+  <link rel="stylesheet" href="../style.css">
+  <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+</head>
+<body class="sketch-page">
+  <header class="hero">
+    <a class="back" href="../">&larr; Séamus Woods</a>
+    <h1>Bike heatmap</h1>
+    <p class="title">Every outdoor ride since August 2024</p>
+  </header>
+
+  <main>
+    <p id="map-status" class="map-status">Loading rides&hellip;</p>
+
+    <div class="heat-stage">
+      <!-- Drawn by ride-map.js. The list below carries the same figures in
+           text, so the page still says something with the canvas unread. -->
+      <canvas
+        id="ride-map"
+        tabindex="0"
+        role="img"
+        aria-label="Heatmap of bike routes. The darker a line, the more times that road was ridden. Figures for each area are listed below the map."></canvas>
+    </div>
+
+    <div class="map-controls">
+      <button type="button" id="zoom-in" aria-label="Zoom in">+</button>
+      <button type="button" id="zoom-out" aria-label="Zoom out">&minus;</button>
+      <button type="button" id="zoom-reset">Reset</button>
+      <span class="map-hint">Drag to pan, scroll or pinch to zoom</span>
+    </div>
+
+    <!-- Buttons are appended by ride-map.js from the same data the map draws,
+         so a region can never appear here that the map cannot show. -->
+    <div class="region-picker">
+      <h2 class="region-heading">Jump to</h2>
+      <div id="regions" class="regions"></div>
+      <p id="region-note" class="sketch-note" role="status" aria-live="polite"></p>
+    </div>
+
+    <section>
+      <h2>How it works</h2>
+      <!-- The figures carry their real values in the markup so the paragraph
+           still reads correctly with JS off; ride-map.js overwrites them from
+           the same data the map draws, so a rebuild cannot leave them stale. -->
+      <p>
+        Every line is a ride I actually rode. There are
+        <span data-ride-stat="rides">212</span> of them, recorded on a Garmin and
+        pulled out of Strava &mdash; a little over
+        <span data-ride-stat="km">4,584</span>&nbsp;km between August 2024 and
+        July 2026, almost all of it within an hour of Dublin, with the rest
+        picked up on trips to Vancouver, Mallorca, Rimini and Amsterdam.
+      </p>
+      <p>
+        The heat is done with compositing rather than with counting. Each track
+        is stroked in translucent ink set to multiply, so paper crossed once
+        stays pale and paper crossed two hundred times drives down to a deep
+        burnt red. The stroke stays the same width on screen at every zoom
+        level, which is the whole trick: zoom in and routes that merged into one
+        dark line separate back into the individual roads that make it up.
+      </p>
+      <p>
+        Almost everything you can see is the tracks themselves &mdash; the
+        climbs through the Wicklow Gap, the grid of streets I ride to get out of
+        the city, all of it drawn only from where the bike has been. The one
+        thing that is not is the faint grey shoreline, traced from
+        OpenStreetMap, which is there because a heatmap floating in white space
+        gives you nothing to hang it on. It was baked into a file when this page
+        was built, so there is still no tile server, no API key and no mapping
+        library, and nothing about your visit is sent anywhere to render it.
+        Positions are projected equirectangular, with longitudes squeezed by the
+        cosine of the view latitude, the same approach as the
+        <a href="../trains/">train map</a>.
+      </p>
+      <p>
+        Turbo sessions are left out. Zwift reports positions in its own world,
+        which lands off the coast of New York, and plotting them would smear a
+        continent I have never cycled across the map.
+      </p>
+    </section>
+
+    <section>
+      <h2>A note on the missing bit</h2>
+      <p>
+        Rides that start at a front door draw a map with the front door at the
+        centre of it, so the streets nearest home have been taken out before the
+        data ever reached this page.
+      </p>
+      <p>
+        The first attempt cut every ride at the same 500&nbsp;m, which turned
+        out to be worse than useless: two hundred rides all stopping at exactly
+        that distance drew a clean circle, and a circle has an obvious centre.
+        So the cut is no longer a fixed distance. Each ride is given its own
+        radius, then has a further random stretch of road trimmed off whichever
+        end the cut fell on, so tracks now stop anywhere between about
+        700&nbsp;m and three kilometres out, on whichever street that ride
+        happened to leave by. The edge is ragged and the hole is lopsided rather
+        than centred on anything. The coordinate being masked is not in the file
+        the page loads.
+      </p>
+      <p>
+        Being straight about the limit: a rider who starts from home every day
+        cannot publish a heatmap that hides the neighbourhood, because the
+        neighbourhood is where all the lines converge. What this does is remove
+        the street-level detail and take away the tidy geometric pointer. It
+        makes the address hard to read off the map. It does not make the general
+        area a secret.
+      </p>
+    </section>
+  </main>
+
+  <script src="../assets/rides.js"></script>
+  <script src="../assets/coastline.js"></script>
+  <script src="../assets/ride-map.js"></script>
+
+  <script
+    data-goatcounter="https://swoods.goatcounter.com/count"
+    data-goatcounter-settings='{"no_onload": true}'
+    async
+    src="https://gc.zgo.at/count.js"></script>
+  <script src="../assets/analytics.js"></script>
+</body>
+</html>
