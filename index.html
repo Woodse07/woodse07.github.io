@@ -122,11 +122,34 @@
     <section id="projects">
       <h2>Projects</h2>
       <p class="section-intro">
-        Things running on a server at home, built because I wanted them to
-        exist.
+        Things built because I wanted them to exist &mdash; some running on a
+        server at home, one out on the open web.
       </p>
 
       <ul class="cards">
+        <li class="card">
+          <h3>
+            <a href="https://marginalwatts.com" data-goatcounter-click="project-marginalwatts">Marginal Watts</a>
+          </h3>
+          <p>
+            A free cycling calculator. Describe your bike, your watts and your
+            distance, and it solves the Martin et al. (1998) road cycling power
+            model for your speed and time &mdash; then re-solves the same ride
+            with every compatible upgrade swapped in and ranks them by cost per
+            second saved, so a free tyre-pressure change competes on the same
+            scale as an aero wheelset.
+          </p>
+          <p>
+            The numbers behind it are a synthesis of the research that actually
+            exists: a corpus of 1,500+ measurements from 250+ published
+            sources, each row carrying its test conditions, method and a
+            confidence tier, and every figure in the component catalog traces
+            back to it. TypeScript throughout &mdash; a dependency-free physics
+            package implements the model, a Next.js frontend draws the form,
+            and the solve runs server-side so the fitted constants and
+            component data never reach the browser.
+          </p>
+        </li>
         <li class="card">
           <h3>Home automation</h3>
           <p>
