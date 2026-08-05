@@ -1,12 +1,20 @@
 // Heatmap of every outdoor bike ride, drawn from window.RIDE_DATA.
 //
-// There is no basemap: the tracks are the map. That keeps the page free of a
-// tile server, an API key and a mapping library, the same way the train map is
-// built, and means opening this page sends nothing to a third party.
+// One continuous map, not five. Every track and every piece of land is drawn in
+// the same coordinate space, and the region buttons only move the camera: they
+// set a centre and a zoom and nothing else. Nothing is fetched at page load, so
+// the page stays free of a tile server, an API key and a mapping library, the
+// same way the train map is, and opening it sends nothing to a third party.
+//
+// Land is a fill, not an outline, for the same reason the train map fills its
+// island: a stroked coastline is a line, and the tracks are lines too, so the
+// two read as the same kind of mark and a shoreline running beside a coast road
+// is indistinguishable from a ride. A flat change of colour says "this is sea"
+// without putting a single competing stroke on the map.
 //
 // Heat comes from compositing rather than from counting. Each track is stroked
-// in translucent accent with "multiply", so paper that one ride crossed stays
-// pale and paper that two hundred rides crossed drives down to a deep burnt
+// in translucent accent with "multiply", so ground that one ride crossed stays
+// pale and ground that two hundred rides crossed drives down to a deep burnt
 // red. Because the stroke is a constant width in screen pixels, zooming in
 // separates tracks that overlapped when zoomed out, which is what makes a road
 // ridden weekly read differently from a road ridden once.
@@ -23,14 +31,18 @@
   // Transparent means an undrawn canvas shows the stage's paper instead.
   const ctx = canvas.getContext("2d");
 
-  const PAPER = "#f6f3ec";
+  const SEA = "#f6f3ec";           // --paper, the page's own ground
+  // The train map's landmass colour, so the two maps of the same island agree.
+  // Barely a step off the sea: enough to read a coastline, not enough to turn
+  // the ground under the tracks into a second colour to look at.
+  const LAND = "#ece5d6";
   const TRACK = "154, 74, 36";     // --accent, as multiply ink
   const TRACK_ALPHA = 0.2;
   const LINE_WIDTH = 1.1;          // CSS px, held constant across zoom
-  const COAST = "rgba(117, 106, 92, 0.62)";  // --ink-faint, kept well back
-  const COAST_WIDTH = 1;
   const ZOOM_STEP = 1.6;
-  const MAX_K = 400000;            // px per degree of latitude: street level
+  // Px per degree of longitude, which is what k counts. Around 30 cm a pixel
+  // at the latitudes here, so the closest zoom is a street either way.
+  const MAX_K = 240000;
   const PAD = 0.06;                // fraction of the stage left as margin
 
   // --- data ----------------------------------------------------------------
@@ -83,37 +95,62 @@
   const lines = [];
   data.regions.forEach((region) => prepare(region.lines, lines));
 
-  // Coast is held in one list rather than per region, so panning from one area
-  // towards another still finds the shoreline on the way.
-  const coast = [];
-  const coastData = window.COAST_DATA;
-  if (coastData) {
-    Object.keys(coastData).forEach((key) => prepare(coastData[key], coast));
-  }
+  // Land comes in two layers. "world" is coarse and global: it is what puts a
+  // whole country on screen when you zoom out, instead of the rectangle of
+  // coast that happened to be near the riding. "detail" is real coastline
+  // around each ride area, each piece with the box it was cut from, drawn over
+  // the world layer and clipped to that box. See assets/land.js.
+  const landData = window.LAND_DATA || { world: [], detail: [] };
+  const world = prepare(landData.world, []);
+  const detail = landData.detail.map((piece) => ({
+    box: piece.box,
+    rings: prepare(piece.rings, []),
+  }));
 
   // --- projection ----------------------------------------------------------
 
-  // Equirectangular, longitudes squeezed by the cosine of the view latitude.
-  // Over a single city or island the distortion is invisible and it costs no
-  // dependency. cos is taken from the view centre and refreshed on every pan,
-  // so it stays correct whether you are looking at Dublin or Mallorca.
+  // Web Mercator. This was equirectangular with longitudes squeezed by the
+  // cosine of the view centre's latitude, which is right for one city and
+  // wrong for a map you can drag across the world: the squeeze was recomputed
+  // from wherever the centre had got to, so dragging north or south rescaled
+  // every longitude on screen and the land stretched and squashed under the
+  // cursor. Mercator is conformal — at any point the scale is the same in both
+  // directions — so a shape keeps its shape however far you pan. The price is
+  // that the far north comes out too big, which is the bargain every slippy
+  // map makes and nothing here is anywhere near the pole.
+  //
+  // x is degrees of longitude and y is the Mercator ordinate in those same
+  // units, which leaves k a single number: pixels per degree of longitude.
   const view = { lat: 0, lng: 0, k: 1000 };
   let width = 0, height = 0, dpr = 1;
 
-  const cosLat = () => Math.cos((view.lat * Math.PI) / 180);
-  const toX = (lng) => (lng - view.lng) * cosLat() * view.k + width / 2;
-  const toY = (lat) => (view.lat - lat) * view.k + height / 2;
+  const DEG = 180 / Math.PI;
+  const mercY = (lat) =>
+    DEG * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));
+  const mercLat = (y) => 2 * DEG * Math.atan(Math.exp(y / DEG)) - 90;
 
+  const toX = (lng) => (lng - view.lng) * view.k + width / 2;
+  const toY = (lat) => (mercY(view.lat) - mercY(lat)) * view.k + height / 2;
+
+  // The only thing a region button does. It sets a centre and a zoom, and the
+  // map redraws from the one set of tracks and the one set of land it always
+  // had — there is no per-region layer to switch to. The zoom is worked out
+  // from the bounds and the stage rather than stored, so a region frames the
+  // same on a phone as on a desktop.
   const fit = (bounds) => {
     const [minLat, minLng, maxLat, maxLng] = bounds;
-    view.lat = (minLat + maxLat) / 2;
+    // Centred in projected space, not in latitude: half way up a region on
+    // screen is not half way up it in degrees.
+    const y0 = mercY(minLat);
+    const y1 = mercY(maxLat);
+    view.lat = mercLat((y0 + y1) / 2);
     view.lng = (minLng + maxLng) / 2;
 
-    const spanLat = Math.max(maxLat - minLat, 1e-4);
-    const spanLng = Math.max((maxLng - minLng) * cosLat(), 1e-4);
+    const spanY = Math.max(y1 - y0, 1e-4);
+    const spanX = Math.max(maxLng - minLng, 1e-4);
     view.k = Math.min(
-      (height * (1 - 2 * PAD)) / spanLat,
-      (width * (1 - 2 * PAD)) / spanLng
+      (height * (1 - 2 * PAD)) / spanY,
+      (width * (1 - 2 * PAD)) / spanX
     );
   };
 
@@ -127,15 +164,16 @@
     frame = null;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.globalCompositeOperation = "source-over";
-    ctx.fillStyle = PAPER;
+    ctx.fillStyle = SEA;
     ctx.fillRect(0, 0, width, height);
 
     // Viewport in degrees, with a margin so a line crossing the edge still
     // draws the segment that enters the view.
-    const halfLat = height / 2 / view.k;
-    const halfLng = width / 2 / view.k / cosLat();
-    const minLat = view.lat - halfLat * 1.1;
-    const maxLat = view.lat + halfLat * 1.1;
+    const halfY = height / 2 / view.k;
+    const halfLng = width / 2 / view.k;
+    const centreY = mercY(view.lat);
+    const minLat = mercLat(centreY - halfY * 1.1);
+    const maxLat = mercLat(centreY + halfY * 1.1);
     const minLng = view.lng - halfLng * 1.1;
     const maxLng = view.lng + halfLng * 1.1;
 
@@ -151,18 +189,61 @@
       }
     };
 
-    // Coast first and in one path, under everything. It is context, not data:
-    // a single flat line with no heat to accumulate, so unlike the tracks it
-    // has no reason to be stroked one at a time.
-    ctx.strokeStyle = COAST;
-    ctx.lineWidth = COAST_WIDTH;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.beginPath();
-    for (let n = 0; n < coast.length; n++) {
-      if (visible(coast[n])) trace(coast[n]);
+    // All the rings of a layer go into one path and are filled nonzero, so
+    // which way a ring is wound is what says land or water: counter-clockwise
+    // encloses land, clockwise cuts a lake out of it. land.js does that when
+    // it is generated so nothing here has to know what encloses what.
+    //
+    // Even-odd would not need the winding and was what this did first. It
+    // cannot be used: the source coastline arrives cut into a grid of pieces
+    // that meet along shared edges, and even-odd cancels the antialiasing
+    // along a shared edge instead of adding it, which drew a pale hairline
+    // right across the map at every whole degree of latitude.
+    const fillRings = (rings) => {
+      ctx.beginPath();
+      for (let n = 0; n < rings.length; n++) {
+        if (!visible(rings[n])) continue;
+        trace(rings[n]);
+        ctx.closePath();
+      }
+      ctx.fill();
+    };
+
+    // Land, under everything. Skip the world layer when a detail box already
+    // covers the whole view, which is the case at any zoom close enough to see
+    // a street: it would be painted over anyway, and tracing a ring the size of
+    // Eurasia at street scale is not free on a drag.
+    const covered = detail.some((piece) =>
+      piece.box[0] <= minLat && piece.box[1] <= minLng &&
+      piece.box[2] >= maxLat && piece.box[3] >= maxLng);
+
+    ctx.fillStyle = LAND;
+    if (!covered) fillRings(world);
+
+    // Each detail box replaces the world layer inside itself rather than
+    // adding to it. Clipping to the box and laying the sea down again first
+    // means the coarse coastline is gone before the accurate one is drawn, so
+    // the two never show as a double edge.
+    for (let d = 0; d < detail.length; d++) {
+      const box = detail[d].box;
+      if (box[2] < minLat || box[0] > maxLat ||
+          box[3] < minLng || box[1] > maxLng) continue;
+      // Clamped to the canvas: a box seen from street level is millions of
+      // pixels across, and there is no reason to hand those numbers to a path.
+      const x0 = Math.max(0, toX(box[1]));
+      const x1 = Math.min(width, toX(box[3]));
+      const y0 = Math.max(0, toY(box[2]));
+      const y1 = Math.min(height, toY(box[0]));
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(x0, y0, x1 - x0, y1 - y0);
+      ctx.clip();
+      ctx.fillStyle = SEA;
+      ctx.fillRect(x0, y0, x1 - x0, y1 - y0);
+      ctx.fillStyle = LAND;
+      fillRings(detail[d].rings);
+      ctx.restore();
     }
-    ctx.stroke();
 
     // Multiply is what turns overlap into heat: each stroke darkens what is
     // already there instead of replacing it.
@@ -208,18 +289,23 @@
 
     // Hold the point under the cursor still: convert it to a coordinate, apply
     // the zoom, then shift the centre so it lands back where it started.
-    const lngAt = view.lng + (px - width / 2) / view.k / cosLat();
-    const latAt = view.lat - (py - height / 2) / view.k;
+    const lngAt = view.lng + (px - width / 2) / view.k;
+    const yAt = mercY(view.lat) - (py - height / 2) / view.k;
     view.k = next;
-    view.lng = lngAt - (px - width / 2) / view.k / cosLat();
-    view.lat = latAt + (py - height / 2) / view.k;
+    view.lng = lngAt - (px - width / 2) / view.k;
+    view.lat = mercLat(yAt + (py - height / 2) / view.k);
     render();
   };
 
-  // Never let the map zoom out past roughly the whole world; there is no
-  // basemap to give a sense of scale, so a fully zoomed-out view is just a
-  // scatter of specks.
-  const minZoom = () => Math.min(height / 170, width / 360);
+  // Never let the map zoom out past roughly the whole world. It used to be
+  // that there was no reason to go anywhere near this far, since a zoomed-out
+  // view was a scatter of specks on blank paper; with land under them the
+  // specks are somewhere, and the whole of it is worth arriving at.
+  //
+  // 360 in both directions: the world is 360 degrees of longitude across, and
+  // in Mercator's units it is about the same tall by the time it reaches the
+  // latitudes where the projection gives up.
+  const minZoom = () => Math.min(height, width) / 360;
 
   let dragging = false;
   let lastX = 0, lastY = 0, moved = 0;
@@ -266,8 +352,8 @@
     moved += Math.abs(dx) + Math.abs(dy);
     lastX = e.clientX;
     lastY = e.clientY;
-    view.lng -= dx / view.k / cosLat();
-    view.lat += dy / view.k;
+    view.lng -= dx / view.k;
+    view.lat = mercLat(mercY(view.lat) + dy / view.k);
     render();
   });
 
@@ -297,10 +383,10 @@
   canvas.addEventListener("keydown", (e) => {
     const step = 60;
     const keys = {
-      ArrowLeft: () => (view.lng -= step / view.k / cosLat()),
-      ArrowRight: () => (view.lng += step / view.k / cosLat()),
-      ArrowUp: () => (view.lat += step / view.k),
-      ArrowDown: () => (view.lat -= step / view.k),
+      ArrowLeft: () => (view.lng -= step / view.k),
+      ArrowRight: () => (view.lng += step / view.k),
+      ArrowUp: () => (view.lat = mercLat(mercY(view.lat) + step / view.k)),
+      ArrowDown: () => (view.lat = mercLat(mercY(view.lat) - step / view.k)),
     };
     if (keys[e.key]) {
       e.preventDefault();
